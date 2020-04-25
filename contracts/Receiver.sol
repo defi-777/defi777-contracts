@@ -23,7 +23,7 @@ abstract contract Receiver is IERC777Recipient {
     bytes calldata userData,
     bytes calldata /*operatorData*/
   ) external override {
-    require(canReceive[msg.sender]);
+    // require(canReceive[msg.sender]);
     _tokensReceived(IERC777(msg.sender), from, amount, userData);
   }
 

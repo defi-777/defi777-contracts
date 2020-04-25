@@ -1,6 +1,8 @@
 let getContract, _web3, group;
 let getAccounts = (accounts) => accounts;
 
+const str = promise => promise.then(result => result.toString())
+
 if (global.artifacts) {
   getContract = artifacts.require;
   group = contract;
@@ -13,4 +15,4 @@ if (global.artifacts) {
   getAccounts = () => [defaultSender, ...accounts];
 }
 
-module.exports = { getContract, web3: _web3, getAccounts, group };
+module.exports = { getContract, web3: _web3, getAccounts, group, str };

@@ -1,4 +1,4 @@
-const { getContract, web3, group, getAccounts } = require('./test-lib');
+const { getContract, web3, group, getAccounts, str } = require('./test-lib');
 const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
@@ -7,8 +7,6 @@ const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 
 const { toWei } = web3.utils;
-
-const str = promise => promise.then(result => result.toString())
 
 group('Wrapped777', (accounts) => {
   const [defaultSender, user] = getAccounts(accounts);
