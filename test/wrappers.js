@@ -1,17 +1,18 @@
-const { accounts, defaultSender, contract, web3 } = require('@openzeppelin/test-environment');
+const { getContract, web3, group, getAccounts } = require('./test-lib');
 const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
-const TestERC20 = contract.fromArtifact('TestERC20');
-const WrapperFactory = contract.fromArtifact('WrapperFactory');
-const Wrapped777 = contract.fromArtifact('Wrapped777');
+const TestERC20 = getContract('TestERC20');
+const WrapperFactory = getContract('WrapperFactory');
+const Wrapped777 = getContract('Wrapped777');
 
 const { toWei } = web3.utils;
-const [user] = accounts;
 
 const str = promise => promise.then(result => result.toString())
 
-describe('Wrapped777', () => {
+group('Wrapped777', (accounts) => {
+  const [defaultSender, user] = getAccounts(accounts);
+
   before(() => singletons.ERC1820Registry(defaultSender));
 
   it('Should wrap an ERC20 token and unwrap it', async () => {
