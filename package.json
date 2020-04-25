@@ -3,8 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "build": "truffle build",
+    "test": "mocha --exit --recursive"
+  },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/contracts": "^3.0.0",
+    "@openzeppelin/test-environment": "^0.1.4",
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.1",
     "truffle": "^5.1.22"
   }
 }
