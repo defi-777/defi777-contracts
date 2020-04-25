@@ -1,7 +1,6 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "../../tokens/Wrapped777.sol";
-import "./UniswapWrapperFactory.sol";
 import "./IUniswapV2Router01.sol";
 import "../../Receiver.sol";
 

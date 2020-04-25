@@ -7,6 +7,8 @@ contract TestUniswapRouter is IUniswapV2Router01 {
 
   address constant weth = 0x0000000000000000000000000000000000000001;
 
+  receive() external payable {}
+
   function WETH() external override pure returns (address) {
     return weth;
   }
