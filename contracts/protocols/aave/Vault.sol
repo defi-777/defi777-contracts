@@ -1,18 +1,11 @@
 pragma solidity >=0.6.2 <0.7.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./VaultBox.sol";
 
-contract Vault is Ownable {
+contract Vault {
   using Address for address;
-
-  mapping(address => address) private authorized;
-
-  function setAuthorized(address account, address token) external onlyOwner {
-    authorized[account] = token;
-  }
 
   function createBox(address user) public {
     new VaultBox{salt: bytes32(bytes20(user))}();
@@ -32,39 +25,32 @@ contract Vault is Ownable {
 
     if(!boxAddress.isContract()) {
       createBox(user);
+      assert(boxAddress.isContract());
     }
-
-    assert(boxAddress.isContract());
   }
 
-  function balanceOf(address token, address user) external view returns (uint256) {
-    return IERC20(token).balanceOf(calculateBoxAddress(user));
+  function vaultBalance(ERC20 token, address user) public view returns (uint256) {
+    return token.balanceOf(calculateBoxAddress(user));
   }
 
-  function deposit(address token, address user) external {
-    require(authorized[msg.sender] == token);
-
+  function deposit(ERC20 token, address user) internal {
     address userBox = calculateBoxAddress(user);
-    uint256 amount = IERC20(token).balanceOf(address(this));
-    IERC20(token).transfer(userBox, amount);
+    uint256 amount = token.balanceOf(address(this));
+    token.transfer(userBox, amount);
   }
 
-  function transfer(address token, address from, address to, uint256 amount) external {
-    require(authorized[msg.sender] == token);
-
+  function transfer(ERC20 token, address from, address to, uint256 amount) internal {
     VaultBox fromBox = VaultBox(getBoxAddress(from));
     address toBox = calculateBoxAddress(to);
 
     fromBox.remove(token, amount);
-    IERC20(token).transfer(toBox, amount);
+    token.transfer(toBox, amount);
   }
 
-  function withdraw(address token, address from, uint256 amount) external {
-    require(authorized[msg.sender] == token);
-
+  function withdraw(ERC20 token, address from, uint256 amount) internal {
     VaultBox fromBox = VaultBox(getBoxAddress(from));
 
     fromBox.remove(token, amount);
-    IERC20(token).transfer(msg.sender, amount);
+    token.transfer(msg.sender, amount);
   }
 }
