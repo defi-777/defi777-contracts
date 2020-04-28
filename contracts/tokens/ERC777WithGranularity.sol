@@ -10,11 +10,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
+import "./Granularity.sol";
 
 /**
  * @dev Copies the OpenZeppelin ERC777, but adds support for Granularity.
  */
-contract ERC777WithGranularity is Context, IERC777, IERC20 {
+contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     using SafeMath for uint256;
     using Address for address;
 
@@ -23,9 +24,6 @@ contract ERC777WithGranularity is Context, IERC777, IERC20 {
     mapping(address => uint256) private _balances;
 
     uint256 private _totalSupply;
-
-    /// Added:
-    uint256 internal _granularity;
 
     string internal _name;
     string internal _symbol;
@@ -105,7 +103,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20 {
      * This implementation always returns `1`.
      */
     function granularity() public view override returns (uint256) {
-        return _granularity;
+        return getGranularity();
     }
 
     /**
@@ -312,7 +310,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20 {
     internal virtual
     {
         require(account != address(0), "ERC777: mint to the zero address");
-        require(amount % _granularity == 0, "ERC777: Invalid granularity");
+        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
 
         address operator = _msgSender();
 
@@ -375,7 +373,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20 {
         internal virtual
     {
         require(from != address(0), "ERC777: burn from the zero address");
-        require(amount % _granularity == 0, "ERC777: Invalid granularity");
+        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
 
         address operator = _msgSender();
 
@@ -401,7 +399,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20 {
     )
         private
     {
-        require(amount % _granularity == 0, "ERC777: Invalid granularity");
+        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
         _beforeTokenTransfer(operator, from, to, amount);
 
         _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");

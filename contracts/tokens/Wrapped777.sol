@@ -18,26 +18,21 @@ contract Wrapped777 is ERC777WithGranularity, Receiver {
     _name = string(abi.encodePacked(token.name(), "-777"));
     _symbol = string(abi.encodePacked(token.symbol(), "777"));
 
-    uint256 decimals = _token.decimals();
-    if (decimals == 1) {
-      _granularity = 1;
-    } else {
-      _granularity = 10 ** (18 - decimals);
-    }
+    setDecimals(_token.decimals());
   }
 
   function wrap(uint256 amount) external {
     address sender = _msgSender();
     token.transferFrom(sender, address(this), amount);
 
-    uint256 adjustedAmount = amount / _granularity;
+    uint256 adjustedAmount = from20to777(amount);
     _mint(sender, adjustedAmount, "", "");
   }
 
   function _tokensReceived(IERC777 /*_token*/, address from, uint256 amount, bytes memory /*data*/) internal override {
-    uint256 adjustedAmount = amount / _granularity;
+    _burn(address(this), amount, "", "");
 
-    _burn(address(this), adjustedAmount, "", "");
+    uint256 adjustedAmount = from777to20(amount);
     token.transfer(from, adjustedAmount);
   }
 

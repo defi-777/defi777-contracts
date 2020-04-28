@@ -9,7 +9,7 @@ const UniswapWrapperFactory = getContract('UniswapWrapperFactory');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 
-const { toWei } = web3.utils;
+const { toWei, toBN } = web3.utils;
 
 const ONE_GWEI = 1000000000;
 
@@ -63,7 +63,7 @@ group('Uniswap', (accounts) => {
 
     const ethSpentOnGas = ONE_GWEI * receipt.gasUsed;
     expect(await web3.eth.getBalance(user))
-      .to.equal((parseInt(startingBalance) + parseInt(toWei('1', 'ether')) - ethSpentOnGas).toString());
+      .to.equal((toBN(startingBalance).add(toBN(toWei('1', 'ether'))).sub(toBN(ethSpentOnGas))).toString());
   });
 
   it('Should swap a 777 token for another token', async () => {
