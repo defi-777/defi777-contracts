@@ -4,9 +4,10 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
 import "../Receiver.sol";
 import "./ERC777WithGranularity.sol";
+import "./IWrapped777.sol";
 
-contract Wrapped777 is ERC777WithGranularity, Receiver {
-  ERC20 public token;
+contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
+  ERC20 public override token;
 
   constructor(ERC20 _token)
     public
@@ -21,7 +22,15 @@ contract Wrapped777 is ERC777WithGranularity, Receiver {
     setDecimals(_token.decimals());
   }
 
-  function wrap(uint256 amount) external {
+  function totalSupply() public view override(ERC777WithGranularity, IERC777) returns (uint256) {
+    return ERC777WithGranularity.totalSupply();
+  }
+
+  function balanceOf(address tokenHolder) public view override(ERC777WithGranularity, IERC777) returns (uint256) {
+    return ERC777WithGranularity.balanceOf(tokenHolder);
+  }
+
+  function wrap(uint256 amount) external override {
     address sender = _msgSender();
     token.transferFrom(sender, address(this), amount);
 
