@@ -10,6 +10,7 @@ contract VaultBox {
   }
 
   function remove(ERC20 token, uint256 amount) external {
+    require(msg.sender == vault);
     token.transfer(msg.sender, amount);
   }
 }
