@@ -12,6 +12,8 @@ import "./Vault.sol";
 
 contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
   ERC20 public override token;
+  address public override factory;
+
   IWrapped777 public reserveWrapper;
   ILendingPool public lendingPool;
 
@@ -53,7 +55,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     }
   }
 
-  function wrap(uint256 amount) external override {
+  function wrap(uint256 amount) external override returns (uint256 outAmount) {
     address sender = _msgSender();
     reserveWrapper.token().transferFrom(sender, address(this), amount);
 
@@ -61,8 +63,8 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     uint16 referralCode = 0;
     lendingPool.deposit(address(reserveWrapper.token()), amount, referralCode);
 
-    uint256 adjustedAmount = from20to777(amount);
-    _mint(sender, adjustedAmount, "", "");
+    outAmount = from20to777(amount);
+    _mint(sender, outAmount, "", "");
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {

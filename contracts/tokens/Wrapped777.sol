@@ -11,6 +11,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   using SafeMath for uint256;
 
   ERC20 public override token;
+  address public override factory;
 
   event FlashLoan(address indexed target, uint256 amount);
 
@@ -26,6 +27,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     ERC777WithGranularity()
   {
     token = _token;
+    factory = msg.sender;
     canReceive[address(this)] = true;
 
     _name = string(abi.encodePacked(token.name(), "-777"));
@@ -52,12 +54,13 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     return ERC777WithGranularity.balanceOf(tokenHolder);
   }
 
-  function wrap(uint256 amount) external override {
+  function wrap(uint256 amount) external override returns (uint256) {
     address sender = _msgSender();
     token.transferFrom(sender, address(this), amount);
 
     uint256 adjustedAmount = from20to777(amount);
     _mint(sender, adjustedAmount, "", "");
+    return adjustedAmount;
   }
 
   function _tokensReceived(IERC777 /*_token*/, address from, uint256 amount, bytes memory data) internal override {
