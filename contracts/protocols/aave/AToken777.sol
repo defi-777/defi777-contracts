@@ -15,7 +15,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
   ERC20 public override token;
   address public override factory;
 
-  IWrapped777 public reserveWrapper;
+  IWrapped777 public immutable reserveWrapper;
   ILendingPool public lendingPool;
 
   address private silentReceive;
@@ -59,11 +59,12 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
 
   function wrap(uint256 amount) external override returns (uint256 outAmount) {
     address sender = _msgSender();
-    reserveWrapper.token().transferFrom(sender, address(this), amount);
+    ERC20 reserve = reserveWrapper.token();
+    reserve.transferFrom(sender, address(this), amount);
 
-    reserveWrapper.token().approve(address(lendingPool.core()), amount);
+    reserve.approve(address(lendingPool.core()), amount);
     uint16 referralCode = 0;
-    lendingPool.deposit(address(reserveWrapper.token()), amount, referralCode);
+    lendingPool.deposit(address(reserve), amount, referralCode);
 
     outAmount = from20to777(amount);
     _mint(sender, outAmount, "", "");
