@@ -1,5 +1,6 @@
 pragma solidity >=0.6.2 <0.7.0;
 
+import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
@@ -32,6 +33,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     _symbol = string(abi.encodePacked(token.symbol(), "777"));
 
     setDecimals(token.decimals());
+    _ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("AToken777"), address(this));
   }
 
   function balanceOf(address tokenHolder) public view override(ERC777WithoutBalance, IERC777) returns (uint256) {
@@ -67,13 +69,20 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     _mint(sender, outAmount, "", "");
   }
 
-  function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
+  function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory data) internal override {
     if (address(_token) == silentReceive) {
       return;
     }
 
-    if (address(_token) == address(this)) {
+    address receiver = from;
+    if (data.length > 0) {
+      (address _receiver) = abi.decode(data, (address));
+      if (_receiver != address(0)) {
+        receiver = _receiver;
+      }
+    }
 
+    if (address(_token) == address(this)) {
       uint adjustedAmount = from777to20(amount);
       withdraw(token, from, adjustedAmount);
       IAToken(address(token)).redeem(adjustedAmount);
@@ -85,7 +94,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
       silentReceive = address(0);
 
       _burn(address(this), amount, "", "");
-      ERC20(address(reserveWrapper)).transfer(from, amount);
+      ERC20(address(reserveWrapper)).transfer(receiver, amount);
     } else if (address(_token) == address(reserveWrapper)) {
       _token.send(address(_token), amount, '');
 
@@ -96,9 +105,9 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
       lendingPool.deposit(address(reserveToken), reserveAmount, referralCode);
 
       require(token.balanceOf(address(this)) == from777to20(amount), "Didn't receive aTokens");
-      deposit(token, from);
+      deposit(token, receiver);
 
-      _mint(from, amount, "", "");
+      _mint(receiver, amount, "", "");
     } else {
       revert('Unsupported');
     }

@@ -1,4 +1,4 @@
-pragma solidity >=0.6.2 <0.7.0;
+pragma solidity >=0.6.5 <0.7.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../../Receiver.sol";
@@ -11,13 +11,16 @@ import "../../tokens/IWrapped777.sol";
 contract Aave777 is Receiver {
   using Address for address;
 
-  address private wrapLock;
-
   ILendingPoolAddressesProvider private addressProvider;
+
+  IERC1820Registry constant private _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
+  bytes32 immutable private _ATOKEN_777_INTERFACE_HASH;
 
   constructor(address lendingPoolAddressProvider) public {
     // mainnet address, for other addresses: https://docs.aave.com/developers/developing-on-aave/deployed-contract-instances
     addressProvider = ILendingPoolAddressesProvider(lendingPoolAddressProvider);
+
+    _ATOKEN_777_INTERFACE_HASH = keccak256("AToken777");
   }
 
   function createWrapper(address wrapper) public {    
@@ -47,23 +50,21 @@ contract Aave777 is Receiver {
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
-    if (address(_token) == wrapLock) {
+    address implementer = _ERC1820_REGISTRY.getInterfaceImplementer(address(_token), _ATOKEN_777_INTERFACE_HASH);
+
+    if (implementer != address(0) /* token is wrapped aToken */) {
+      _token.send(address(_token), amount, abi.encode(from));
       return;
     }
 
-    if (false/* token is wrapped aToken */) {
-      _token.send(address(_token), amount, "");
-      // IAToken aToken = IAToken(AToken777(_token).token());
-      // aToken.redeem();
-    } else if (addressProvider.getLendingPool().core().getReserveATokenAddress(address(IWrapped777(address(_token)).token())) != address(0)) {
-      AToken777 wrapper = AToken777(getWrapperAddress(address(_token)));
-      wrapLock = address(wrapper);
+    address innerToken = address(IWrapped777(address(_token)).token());
+    address aToken = addressProvider.getLendingPool().core().getReserveATokenAddress(innerToken);
+    if (aToken != address(0)) {
+      address wrapper = address(getWrapperAddress(address(_token)));
 
-      _token.send(address(wrapper), amount, '');
-      wrapper.transfer(from, amount);
+      _token.send(wrapper, amount, abi.encode(from));
     } else {
       revert("Unsupported token");
     }
-    wrapLock = address(0);
   }
 }
