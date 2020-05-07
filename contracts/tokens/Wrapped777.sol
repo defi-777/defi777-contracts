@@ -22,7 +22,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
   mapping(address => uint) public nonces;
 
-  constructor(ERC20 _token)
+  constructor(ERC20 _token, string memory name, string memory symbol)
     public
     ERC777WithGranularity()
   {
@@ -30,8 +30,17 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     factory = msg.sender;
     canReceive[address(this)] = true;
 
-    _name = string(abi.encodePacked(token.name(), "-777"));
-    _symbol = string(abi.encodePacked(token.symbol(), "777"));
+    if (bytes(name).length == 0) {
+      _name = string(abi.encodePacked(token.name(), "-777"));
+    } else {
+      _name = name;
+    }
+
+    if (bytes(symbol).length == 0) {
+      _symbol = string(abi.encodePacked(token.symbol(), "777"));
+    } else {
+      _symbol = symbol;
+    }
 
     setDecimals(_token.decimals());
 

@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const TestERC20 = getContract('TestERC20');
 const TestFlashLoanRecipient = getContract('TestFlashLoanRecipient');
+const TestMKR = getContract('TestMKR');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 
@@ -39,6 +40,16 @@ group('Wrapped777', (accounts) => {
 
   it('Should wrap an Dai and unwrap it');
   it('Should wrap USDC and unwrap it');
+
+  it('Should wrap MKR and other tokens using bytes32 names', async () => {
+    const mkr = await TestMKR.new();
+    const factory = await WrapperFactory.new();
+
+    await factory.createWithName(mkr.address, 'Maker777', 'MKR777');
+    const wrapperAddress = await factory.getWrapper(mkr.address);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+    expect(await wrapper.symbol()).to.equal('MKR777');
+  });
 
   it('Should issue flash loans', async () => {
     const token = await TestERC20.new();
