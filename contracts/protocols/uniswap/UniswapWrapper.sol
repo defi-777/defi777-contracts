@@ -30,7 +30,7 @@ contract UniswapWrapper is Receiver {
   /**
     * Ex: Assume this is a Dai Uniswap contract
     * If Dai777 is sent to this, it will swap to ETH
-    * If USDC777 is sent to this, it wall swap to Dai
+    * If USDC777 is sent to this, it wall swap to Dai777
     */
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
     if (address(_token) == address(wrapper) && wrapping) {
