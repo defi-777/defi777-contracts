@@ -16,18 +16,27 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
   address public override factory;
 
   IWrapped777 public immutable reserveWrapper;
+  ERC20 public reserve;
   ILendingPool public lendingPool;
 
+  uint16 constant private referralCode = 45;
   address private silentReceive;
+  address constant private ETH_FAKE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   constructor(ILendingPool _lendingPool, IWrapped777 _reserveWrapper) public {
     lendingPool = _lendingPool;
     reserveWrapper = _reserveWrapper;
 
+    if (address(_reserveWrapper) == ETH_FAKE_TOKEN) {
+      reserve = ERC20(ETH_FAKE_TOKEN);
+    } else {
+      reserve = _reserveWrapper.token();
+    }
+
     canReceive[address(this)] = true;
     canReceive[address(_reserveWrapper)] = true;
 
-    token = ERC20(lendingPool.core().getReserveATokenAddress(address(_reserveWrapper.token())));
+    token = ERC20(lendingPool.core().getReserveATokenAddress(address(reserve)));
 
     _name = string(abi.encodePacked(token.name(), "-777"));
     _symbol = string(abi.encodePacked(token.symbol(), "777"));
@@ -59,15 +68,30 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
 
   function wrap(uint256 amount) external override returns (uint256 outAmount) {
     address sender = _msgSender();
-    ERC20 reserve = reserveWrapper.token();
     reserve.transferFrom(sender, address(this), amount);
 
     reserve.approve(address(lendingPool.core()), amount);
-    uint16 referralCode = 0;
     lendingPool.deposit(address(reserve), amount, referralCode);
 
     outAmount = from20to777(amount);
     _mint(sender, outAmount, "", "");
+  }
+
+  receive() external payable {
+    if (silentReceive != ETH_FAKE_TOKEN) {
+      depositFor(msg.sender);
+    }
+  }
+
+  function depositFor(address receiver) public payable {
+    require(address(reserveWrapper) == ETH_FAKE_TOKEN);
+    uint256 amount = msg.value;
+    lendingPool.deposit{value: amount}(ETH_FAKE_TOKEN, amount, referralCode);
+
+    require(token.balanceOf(address(this)) == amount, "Didn't receive aTokens");
+    deposit(token, receiver);
+
+    _mint(receiver, amount, "", "");
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory data) internal override {
@@ -86,24 +110,18 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     if (address(_token) == address(this)) {
       uint adjustedAmount = from777to20(amount);
       withdraw(token, from, adjustedAmount);
+      silentReceive = address(reserveWrapper);
       IAToken(address(token)).redeem(adjustedAmount);
 
-      reserveWrapper.token().approve(address(reserveWrapper), adjustedAmount);
-
-      silentReceive = address(reserveWrapper);
-      reserveWrapper.wrap(adjustedAmount);
-      silentReceive = address(0);
-
       _burn(address(this), amount, "", "");
-      ERC20(address(reserveWrapper)).transfer(receiver, amount);
+      transferReserveToUser(receiver, amount);
+      silentReceive = address(0);
     } else if (address(_token) == address(reserveWrapper)) {
       _token.send(address(_token), amount, '');
 
-      ERC20 reserveToken = reserveWrapper.token();
-      uint reserveAmount = reserveToken.balanceOf(address(this));
-      reserveToken.approve(address(lendingPool.core()), reserveAmount);
-      uint16 referralCode = 0;
-      lendingPool.deposit(address(reserveToken), reserveAmount, referralCode);
+      uint reserveAmount = reserve.balanceOf(address(this));
+      reserve.approve(address(lendingPool.core()), reserveAmount);
+      lendingPool.deposit(address(reserve), reserveAmount, referralCode);
 
       require(token.balanceOf(address(this)) == from777to20(amount), "Didn't receive aTokens");
       deposit(token, receiver);
@@ -112,6 +130,18 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver, Vault {
     } else {
       revert('Unsupported');
     }
+  }
+
+  function transferReserveToUser(address receiver, uint256 amount) private {
+    if (address(reserve) == ETH_FAKE_TOKEN) {
+      payable(receiver).transfer(amount);
+    } else {
+      reserve.approve(address(reserveWrapper), amount);
+
+      reserveWrapper.wrap(amount);
+      ERC20(address(reserveWrapper)).transfer(receiver, amount);
+    }
+
   }
 
 }

@@ -16,6 +16,8 @@ contract Aave777 is Receiver {
   IERC1820Registry constant private _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
   bytes32 immutable private _ATOKEN_777_INTERFACE_HASH;
 
+  address constant private ETH_FAKE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
   constructor(address lendingPoolAddressProvider) public {
     // mainnet address, for other addresses: https://docs.aave.com/developers/developing-on-aave/deployed-contract-instances
     addressProvider = ILendingPoolAddressesProvider(lendingPoolAddressProvider);
@@ -49,6 +51,12 @@ contract Aave777 is Receiver {
     }
   }
 
+  receive() external payable {
+    AToken777 atoken = AToken777(payable(getWrapperAddress(ETH_FAKE_TOKEN)));
+
+    atoken.depositFor{value: msg.value}(msg.sender);
+  }
+
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
     address implementer = _ERC1820_REGISTRY.getInterfaceImplementer(address(_token), _ATOKEN_777_INTERFACE_HASH);
 
@@ -60,7 +68,7 @@ contract Aave777 is Receiver {
     address innerToken = address(IWrapped777(address(_token)).token());
     address aToken = addressProvider.getLendingPool().core().getReserveATokenAddress(innerToken);
     if (aToken != address(0)) {
-      address wrapper = address(getWrapperAddress(address(_token)));
+      address wrapper = getWrapperAddress(address(_token));
 
       _token.send(wrapper, amount, abi.encode(from));
     } else {

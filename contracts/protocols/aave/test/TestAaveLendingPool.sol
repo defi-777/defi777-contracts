@@ -16,6 +16,6 @@ contract TestAaveLendingPool is ILendingPool {
   }
 
   function deposit(address _reserve, uint256 _amount, uint16 _referralCode) external payable override {
-    TestAaveLendingPoolCore(_core).deposit(_reserve, _amount, msg.sender);
+    TestAaveLendingPoolCore(_core).deposit{value: msg.value}(_reserve, _amount, msg.sender);
   }
 }
