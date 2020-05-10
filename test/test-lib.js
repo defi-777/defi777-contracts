@@ -28,4 +28,26 @@ if (global.artifacts) {
   };
 }
 
-module.exports = { getContract, web3: _web3, getAccounts, group, str, getDefiAddresses };
+const getWrappedToken = async (tokenContract) => {
+  const _tokenContract = tokenContract || getContract('TestERC20');
+  const WrapperFactory = getContract('WrapperFactory');
+  const Wrapped777 = getContract('Wrapped777');
+
+  const [token, factory] = await Promise.all([
+    _tokenContract.new(),
+    WrapperFactory.new(),
+  ]);
+
+  const [_, wrapperAddress] = await Promise.all([
+    factory.create(token.address),
+    factory.getWrapper(token.address),
+  ]);
+
+  const wrapper = await Wrapped777.at(wrapperAddress);
+  await token.approve(wrapperAddress, _web3.utils.toWei('100', 'ether'));
+  await wrapper.wrap(_web3.utils.toWei('100', 'ether'));
+
+  return [wrapper, token];
+}
+
+module.exports = { getContract, web3: _web3, getAccounts, group, str, getDefiAddresses, getWrappedToken };
