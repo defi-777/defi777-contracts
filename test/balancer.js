@@ -17,8 +17,22 @@ const ONE_GWEI = 1000000000;
 group('Balancer', (accounts) => {
   const [defaultSender, user] = getAccounts(accounts);
 
-  before(() => singletons.ERC1820Registry(defaultSender));
+  let dai, usdc, balancerFactory, balancerPool;
 
+  before(async function () {
+    this.timeout(3000);
+
+    await singletons.ERC1820Registry(defaultSender);
+    ({ dai, aave } = await getDefiAddresses());
+
+    const factory = await WrapperFactory.new();
+    await factory.create(dai);
+    dai777 = await Wrapped777.at(await factory.getWrapper(dai));
+
+    const daiToken = await IERC20.at(dai);
+    await daiToken.approve(dai777.address, toWei('100', 'ether'));
+    await dai777.wrap(toWei('100', 'ether'));
+  });
   it('should swap tokens through a balancer', async () => {
     const factory = await WrapperFactory.new();
 

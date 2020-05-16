@@ -62,6 +62,16 @@ module.exports = {
     kovan: {
       provider: () => new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`),
       network_id: 42,       // Ropsten's id
+      gasPrice: 1100000000,  // 20 gwei (in wei) (default: 100 gwei)
+      // gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
+    mainnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`),
+      network_id: 1,       // Ropsten's id
+      // gasPrice: 1100000000,  // 20 gwei (in wei) (default: 100 gwei)
       // gas: 5500000,        // Ropsten has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)

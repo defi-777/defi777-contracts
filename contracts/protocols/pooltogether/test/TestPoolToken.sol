@@ -21,6 +21,10 @@ contract TestPoolToken {
 
   function mint(address recipient, uint256 amount) external {
     balanceOf[recipient] += amount;
+
+    if (recipient.isContract()) {
+      IERC777Recipient(recipient).tokensReceived(address(0), address(0), recipient, amount, '', '');
+    }
   }
 
   function burn(address holder, uint256 amount) external {

@@ -49,8 +49,13 @@ contract PoolTogether777 is Receiver, Ownable {
       _token.send(address(_token), amount, '');
       uint256 adjustedAmount = wrappedToken.balanceOf(address(this));
       wrappedToken.approve(address(pool), adjustedAmount);
+
+      ERC777 poolToken = pool.poolToken();
+      silentReceive = address(poolToken);
       pool.depositPool(adjustedAmount);
-      pool.poolToken().transfer(from, adjustedAmount);
+      silentReceive = address(0);
+
+      poolToken.transfer(from, adjustedAmount);
     } else {
       revert("Unsupported token");
     }
