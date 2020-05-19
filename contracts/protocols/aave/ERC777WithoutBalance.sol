@@ -23,8 +23,6 @@ abstract contract ERC777WithoutBalance is Context, IERC777, IERC20, Granularity 
 
     // mapping(address => uint256) private _balances;
 
-    uint256 private _totalSupply;
-
     string internal _name;
     string internal _symbol;
 
@@ -109,9 +107,7 @@ abstract contract ERC777WithoutBalance is Context, IERC777, IERC20, Granularity 
     /**
      * @dev See {IERC777-totalSupply}.
      */
-    function totalSupply() public view override(IERC20, IERC777) virtual returns (uint256) {
-        return _totalSupply;
-    }
+    function totalSupply() public view override(IERC20, IERC777) virtual returns (uint256);
 
     function balanceOf(address account) external view override(IERC20, IERC777) virtual returns (uint256);
 
@@ -312,7 +308,7 @@ abstract contract ERC777WithoutBalance is Context, IERC777, IERC20, Granularity 
         _beforeTokenTransfer(operator, address(0), account, amount);
 
         // Update state variables
-        _totalSupply = _totalSupply.add(amount);
+        // _totalSupply = _totalSupply.add(amount);
         // _balances[account] = _balances[account].add(amount);
 
         _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
@@ -378,7 +374,7 @@ abstract contract ERC777WithoutBalance is Context, IERC777, IERC20, Granularity 
 
         // Update state variables
         // _balances[from] = _balances[from].sub(amount, "ERC777: burn amount exceeds balance");
-        _totalSupply = _totalSupply.sub(amount);
+        // _totalSupply = _totalSupply.sub(amount);
 
         emit Burned(operator, from, amount, data, operatorData);
         emit Transfer(from, address(0), amount);

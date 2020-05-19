@@ -29,4 +29,8 @@ contract TestAaveLendingPoolCore is ILendingPoolCore {
     _token.deposit{value: msg.value}(_amount);
     _token.transfer(user, _amount);
   }
+
+  function getReserveNormalizedIncome(address /*_reserve*/) external view override returns (uint256) {
+    return 1.2e27;
+  }
 }
