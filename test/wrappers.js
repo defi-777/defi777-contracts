@@ -3,6 +3,7 @@ const { singletons, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const TestERC20 = getContract('TestERC20');
+const TestUSDC = getContract('TestUSDC');
 const TestFlashLoanRecipient = getContract('TestFlashLoanRecipient');
 const TestMKR = getContract('TestMKR');
 const WrapperFactory = getContract('WrapperFactory');
@@ -39,7 +40,29 @@ group('Wrapped777', (accounts) => {
   });
 
   it('Should wrap an Dai and unwrap it');
-  it('Should wrap USDC and unwrap it');
+
+  it('Should wrap USDC and unwrap it', async () => {
+    const token = await TestUSDC.new();
+    const factory = await WrapperFactory.new();
+
+    await factory.create(token.address);
+    const wrapperAddress = await factory.getWrapper(token.address);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal('100000000');
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
+
+    await token.approve(wrapperAddress, '10000000');
+    await wrapper.wrap('10000000');
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal('90000000');
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(toWei('10', 'ether'));
+
+    await wrapper.transfer(user, toWei('10', 'ether'));
+    await wrapper.transfer(wrapper.address, toWei('10', 'ether'), { from: user });
+
+    expect(await str(token.balanceOf(user))).to.equal('10000000');
+  });
 
   it('Should wrap MKR and other tokens using bytes32 names', async () => {
     const mkr = await TestMKR.new();
