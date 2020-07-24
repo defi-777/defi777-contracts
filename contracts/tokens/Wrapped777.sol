@@ -81,7 +81,12 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     return adjustedAmount;
   }
 
-  function _tokensReceived(IERC777 /*_token*/, address from, uint256 amount, bytes memory data) internal override {
+  function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory data) internal override {
+    if (address(_token) != address(this)) {
+      tryTokenUpgrade(address(_token), from, amount);
+      return;
+    }
+
     _burn(address(this), amount, "", "");
     if (keccak256(data) == keccak256(bytes('flreturn'))) {
       borrows[from] = borrows[from].sub(amount);
@@ -105,6 +110,17 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     require(borrows[target] == 0, 'Flash loan was not returned');
 
     emit FlashLoan(target, amount);
+  }
+
+  function tryTokenUpgrade(address oldWrapper, address sender, uint256 amount) private {
+    if (address(Wrapped777(oldWrapper).token()) != address(token)) {
+      revert("INVALID_TOKEN");
+    }
+
+    Wrapped777(oldWrapper).transfer(oldWrapper, amount);
+
+    uint256 adjustedAmount = from20to777(token.balanceOf(address(this)));
+    _mint(sender, adjustedAmount, "", "");
   }
 
   function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {

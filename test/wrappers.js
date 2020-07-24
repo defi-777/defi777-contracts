@@ -1,4 +1,4 @@
-const { getContract, web3, group, getAccounts, str } = require('./test-lib');
+const { getContract, web3, group, getAccounts, str, eth } = require('./test-lib');
 const { singletons, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
@@ -72,6 +72,28 @@ group('Wrapped777', (accounts) => {
     const wrapperAddress = await factory.getWrapper(mkr.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
     expect(await wrapper.symbol()).to.equal('MKR777');
+  });
+
+  it('should upgrade old 777 tokens', async () => {
+    const token = await TestERC20.new();
+
+    const factory1 = await WrapperFactory.new();
+    await factory1.create(token.address);
+    const wrapper1Address = await factory1.getWrapper(token.address);
+    const wrapper1 = await Wrapped777.at(wrapper1Address);
+
+    const factory2 = await WrapperFactory.new();
+    await factory2.create(token.address);
+    const wrapper2Address = await factory2.getWrapper(token.address);
+    const wrapper2 = await Wrapped777.at(wrapper2Address);
+
+    await token.approve(wrapper1Address, eth('10'));
+    await wrapper1.wrap(eth('10'));
+
+    await wrapper1.transfer(wrapper2Address, eth('10'));
+
+    expect(await str(wrapper2.balanceOf(defaultSender))).to.equal(eth('10'));
+
   });
 
   it('Should issue flash loans', async () => {

@@ -50,4 +50,13 @@ const getWrappedToken = async (tokenContract) => {
   return [wrapper, token];
 }
 
-module.exports = { getContract, web3: _web3, getAccounts, group, str, getDefiAddresses, getWrappedToken };
+module.exports = {
+  getContract,
+  web3: _web3,
+  getAccounts,
+  group,
+  str,
+  getDefiAddresses,
+  getWrappedToken,
+  eth: num => _web3.utils.toWei(num, 'ether'),
+};
