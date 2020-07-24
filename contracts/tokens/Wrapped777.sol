@@ -10,6 +10,8 @@ import "./IWrapped777.sol";
 contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   using SafeMath for uint256;
 
+  string public constant WRAPPER_VERSION = "0.2.0";
+
   ERC20 public override token;
   address public override factory;
 
@@ -43,6 +45,8 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     }
 
     setDecimals(_token.decimals());
+
+    ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Wrapped777"), address(this));
 
     DOMAIN_SEPARATOR = keccak256(
       abi.encode(
