@@ -110,6 +110,20 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
     _mint(sender, outAmount, "", "");
   }
 
+  function wrapTo(uint256 amount, address recipient) external override returns (uint256 outAmount) {
+    address sender = _msgSender();
+    reserve.transferFrom(sender, address(this), amount);
+
+    update(recipient);
+    balance[recipient] = balance[recipient].add(amount);
+
+    reserve.approve(address(lendingPool.core()), amount);
+    lendingPool.deposit(address(reserve), amount, referralCode);
+
+    outAmount = from20to777(amount);
+    _mint(recipient, outAmount, "", "");
+  }
+
   receive() external payable {
     if (silentReceive != ETH_FAKE_TOKEN) {
       depositFor(msg.sender);
@@ -186,10 +200,8 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
     } else {
       reserve.approve(address(reserveWrapper), amount);
 
-      reserveWrapper.wrap(amount);
-      ERC20(address(reserveWrapper)).transfer(receiver, amount);
+      reserveWrapper.wrapTo(amount, receiver);
     }
-
   }
 
 }

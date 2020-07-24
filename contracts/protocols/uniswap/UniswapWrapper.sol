@@ -63,9 +63,9 @@ contract UniswapWrapper is Receiver {
 
   function wrapAndReturn(address recipient) private {
     wrapping = true;
-    wrapper.token().approve(address(wrapper), wrapper.token().balanceOf(address(this)));
-    wrapper.wrap(wrapper.token().balanceOf(address(this)));
-    wrapper.transfer(recipient, wrapper.balanceOf(address(this)));
+    uint256 amount = wrapper.token().balanceOf(address(this));
+    wrapper.token().approve(address(wrapper), amount);
+    wrapper.wrapTo(amount, recipient);
     wrapping = false;
   }
 }

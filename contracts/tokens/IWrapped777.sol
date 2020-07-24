@@ -9,4 +9,6 @@ interface IWrapped777 is IERC777 {
   function token() external view returns (ERC20);
 
   function wrap(uint256 amount) external returns (uint256);
+
+  function wrapTo(uint256 amount, address recipient) external returns (uint256);
 }

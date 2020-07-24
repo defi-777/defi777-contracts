@@ -77,8 +77,7 @@ contract SynthExchange is Receiver {
   function wrapAndReturn(address recipient, uint256 amount) private {
     wrapping = true;
     outputWrapper.token().approve(address(outputWrapper), amount);
-    uint256 wrappedAmount = outputWrapper.wrap(amount);
-    outputWrapper.transfer(recipient, wrappedAmount);
+    uint256 wrappedAmount = outputWrapper.wrapTo(amount, recipient);
     wrapping = false;
   }
 }

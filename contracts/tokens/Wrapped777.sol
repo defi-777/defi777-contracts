@@ -72,6 +72,15 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     return adjustedAmount;
   }
 
+  function wrapTo(uint256 amount, address recipient) external override returns (uint256) {
+    address sender = _msgSender();
+    token.transferFrom(sender, address(this), amount);
+
+    uint256 adjustedAmount = from20to777(amount);
+    _mint(recipient, adjustedAmount, "", "");
+    return adjustedAmount;
+  }
+
   function _tokensReceived(IERC777 /*_token*/, address from, uint256 amount, bytes memory data) internal override {
     _burn(address(this), amount, "", "");
     if (keccak256(data) == keccak256(bytes('flreturn'))) {

@@ -320,7 +320,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         _totalSupply = _totalSupply.add(amount);
         _balances[account] = _balances[account].add(amount);
 
-        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, true);
+        _callTokensReceived(operator, address(0), account, amount, userData, operatorData, false);
 
         emit Minted(operator, account, amount, userData, operatorData);
         emit Transfer(address(0), account, amount);
