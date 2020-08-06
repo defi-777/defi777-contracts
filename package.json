@@ -14,6 +14,7 @@
     "@truffle/hdwallet-provider": "^1.0.35",
     "chai": "^4.2.0",
     "dotenv": "^8.2.0",
+    "eth-permit": "^0.1.4",
     "mocha": "^7.1.1",
     "truffle": "^5.1.22",
     "truffle-flattener": "^1.4.3",

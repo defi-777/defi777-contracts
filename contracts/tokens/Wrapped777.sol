@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
 import "../Receiver.sol";
 import "./ERC777WithGranularity.sol";
 import "./IWrapped777.sol";
+import "./IPermit.sol";
 
 contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   using SafeMath for uint256;
@@ -69,6 +70,21 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
 
   function wrap(uint256 amount) external override returns (uint256) {
     address sender = _msgSender();
+    return _wrap(sender, amount);
+  }
+
+  function wrapWithPermit(uint value, uint deadline, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external returns (uint256) {
+    address sender = _msgSender();
+    try IPermit(address(token)).permit(sender, address(this), value, deadline, v, r, s) {
+    } catch {
+      // Dai
+      IPermit(address(token)).permit(sender, address(this), nonce, deadline, true /* allowed */, v, r, s);
+    }
+
+    return _wrap(sender, value);
+  }
+
+  function _wrap(address sender, uint256 amount) private returns (uint256) {
     token.transferFrom(sender, address(this), amount);
 
     uint256 adjustedAmount = from20to777(amount);

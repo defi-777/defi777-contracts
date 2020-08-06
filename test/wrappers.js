@@ -1,9 +1,13 @@
 const { getContract, web3, group, getAccounts, str, eth } = require('./test-lib');
 const { singletons, expectRevert } = require('@openzeppelin/test-helpers');
+const { signDaiPermit, signERC2612Permit } = require('eth-permit');
+const { setChainIdOverride } = require('eth-permit/dist/rpc');
 const { expect } = require('chai');
 
 const TestERC20 = getContract('TestERC20');
+const TestERC2612 = getContract('TestERC2612');
 const TestUSDC = getContract('TestUSDC');
+const TestDai = getContract('TestDai');
 const TestFlashLoanRecipient = getContract('TestFlashLoanRecipient');
 const TestMKR = getContract('TestMKR');
 const WrapperFactory = getContract('WrapperFactory');
@@ -39,7 +43,43 @@ group('Wrapped777', (accounts) => {
     expect(await str(token.balanceOf(user))).to.equal(toWei('10', 'ether'));
   });
 
-  it('Should wrap an Dai and unwrap it');
+  it('shold wrap an ERC20 using permit', async () => {
+    const token = await TestERC2612.new();
+    const factory = await WrapperFactory.new();
+
+    await factory.create(token.address);
+    const wrapperAddress = await factory.getWrapper(token.address);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
+
+    setChainIdOverride(1);
+    const result = await signERC2612Permit(web3.currentProvider, token.address, defaultSender, wrapper.address, eth('10'));
+    await wrapper.wrapWithPermit(eth('10'), result.deadline, result.nonce, result.v, result.r, result.s);
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('90', 'ether'));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(toWei('10', 'ether'));
+  });
+
+  it('Should wrap an Dai and unwrap it', async () => {
+    const token = await TestDai.new();
+    const factory = await WrapperFactory.new();
+
+    await factory.create(token.address);
+    const wrapperAddress = await factory.getWrapper(token.address);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
+
+    setChainIdOverride(1);
+    const result = await signDaiPermit(web3.currentProvider, token.address, defaultSender, wrapper.address);
+    await wrapper.wrapWithPermit(eth('10'), result.expiry, result.nonce, result.v, result.r, result.s);
+
+    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('90', 'ether'));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(toWei('10', 'ether'));
+  });
 
   it('Should wrap USDC and unwrap it', async () => {
     const token = await TestUSDC.new();
