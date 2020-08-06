@@ -40,8 +40,8 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
       reserve = _reserveWrapper.token();
     }
 
-    canReceive[address(this)] = true;
-    canReceive[address(_reserveWrapper)] = true;
+    whitelistReceiveToken(address(this));
+    whitelistReceiveToken(address(_reserveWrapper));
 
     token = ERC20(lendingPool.core().getReserveATokenAddress(address(reserve)));
 

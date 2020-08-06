@@ -31,7 +31,6 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   {
     token = _token;
     factory = msg.sender;
-    canReceive[address(this)] = true;
 
     if (bytes(name).length == 0) {
       _name = string(abi.encodePacked(token.name(), "-777"));
@@ -116,12 +115,6 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     uint256 adjustedAmount = from777to20(amount);
     token.transfer(from, adjustedAmount);
   }
-
-  // function recover(ERC20 _token) external virtual /*onlyOwner*/ {
-  //   require(!canReceive[address(_token)]);
-
-  //   _token.transfer(msg.sender, _token.balanceOf(address(this)));
-  // }
 
   function flashLoan(address target, uint256 amount, bytes calldata data) external {
     borrows[target] = borrows[target].add(amount);

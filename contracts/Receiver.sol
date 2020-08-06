@@ -5,7 +5,8 @@ import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 
 abstract contract Receiver is IERC777Recipient {
-  mapping(address => bool) internal canReceive;
+  mapping(address => bool) private canReceive;
+  bool private canReceiveAll = true;
 
   IERC1820Registry constant internal ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
@@ -15,6 +16,13 @@ abstract contract Receiver is IERC777Recipient {
 
   function _tokensReceived(IERC777 token, address from, uint256 amount, bytes memory data) internal virtual;
 
+  function whitelistReceiveToken(address token) internal {
+    if (!canReceiveAll) {
+      canReceiveAll = true;
+    }
+    canReceive[token] = true;
+  }
+
   function tokensReceived(
     address /*operator*/,
     address from,
@@ -23,13 +31,7 @@ abstract contract Receiver is IERC777Recipient {
     bytes calldata userData,
     bytes calldata /*operatorData*/
   ) external override {
-    // require(canReceive[msg.sender]);
+    require(canReceiveAll || canReceive[msg.sender]);
     _tokensReceived(IERC777(msg.sender), from, amount, userData);
-  }
-
-  function recover(address token) external /*onlyOwner*/ {
-    // require(!canReceive[address(token)]);
-
-    IERC777(token).send(msg.sender, IERC777(token).balanceOf(address(this)), "");
   }
 }
