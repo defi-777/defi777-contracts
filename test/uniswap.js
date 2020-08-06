@@ -22,8 +22,8 @@ group('Uniswap', (accounts) => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     const uniswapRouter = await TestUniswapRouter.new();
@@ -42,8 +42,8 @@ group('Uniswap', (accounts) => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     await token.approve(wrapperAddress, toWei('10', 'ether'));
@@ -72,10 +72,10 @@ group('Uniswap', (accounts) => {
     const token1 = await TestERC20.new();
     const token2 = await TestERC20.new();
 
-    await factory.create(token1.address);
-    await factory.create(token2.address);
-    const wrapper1Address = await factory.getWrapper(token1.address);
-    const wrapper2Address = await factory.getWrapper(token2.address);
+    await factory.createWrapper(token1.address);
+    await factory.createWrapper(token2.address);
+    const wrapper1Address = await factory.calculateWrapperAddress(token1.address);
+    const wrapper2Address = await factory.calculateWrapperAddress(token2.address);
     const wrapper1 = await Wrapped777.at(wrapper1Address);
     const wrapper2 = await Wrapped777.at(wrapper2Address);
 

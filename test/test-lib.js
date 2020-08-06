@@ -39,8 +39,8 @@ const getWrappedToken = async (tokenContract) => {
   ]);
 
   const [_, wrapperAddress] = await Promise.all([
-    factory.create(token.address),
-    factory.getWrapper(token.address),
+    factory.createWrapper(token.address),
+    factory.calculateWrapperAddress(token.address),
   ]);
 
   const wrapper = await Wrapped777.at(wrapperAddress);

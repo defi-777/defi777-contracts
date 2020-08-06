@@ -39,13 +39,13 @@ contract Balancer777 is Receiver {
     );
 
     WrapperFactory factory = WrapperFactory(IWrapped777(address(_token)).factory());
-    IWrapped777 outputWrapper = factory.getWrapper(outputToken);
+    address outputWrapper = factory.getWrapperAddress(outputToken);
 
-    ERC20(outputToken).approve(address(outputWrapper), tokenAmountOut);
-    wrapping = address(outputWrapper);
-    uint outputWrapperAmount = outputWrapper.wrap(tokenAmountOut);
+    ERC20(outputToken).approve(outputWrapper, tokenAmountOut);
+    wrapping = outputWrapper;
+    uint outputWrapperAmount = IWrapped777(outputWrapper).wrap(tokenAmountOut);
     wrapping = address(0);
 
-    ERC20(address(outputWrapper)).transfer(from, outputWrapperAmount);
+    ERC20(outputWrapper).transfer(from, outputWrapperAmount);
   }
 }

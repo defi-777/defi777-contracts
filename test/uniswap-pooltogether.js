@@ -26,14 +26,14 @@ group('PoolTogether - Uniswap', (accounts) => {
 
     const factory = await WrapperFactory.new();
 
-    await factory.create(dai.address);
-    const daiwrapperAddress = await factory.getWrapper(dai.address);
+    await factory.createWrapper(dai.address);
+    const daiwrapperAddress = await factory.calculateWrapperAddress(dai.address);
     const dai777 = await Wrapped777.at(daiwrapperAddress);
     await dai.approve(dai777.address, toWei('10', 'ether'));
     await dai777.wrap(toWei('10', 'ether'));
 
-    await factory.create(usdc.address);
-    const usdcwrapperAddress = await factory.getWrapper(usdc.address);
+    await factory.createWrapper(usdc.address);
+    const usdcwrapperAddress = await factory.calculateWrapperAddress(usdc.address);
     const usdc777 = await Wrapped777.at(usdcwrapperAddress);
     await usdc.approve(usdc777.address, toWei('10', 'ether'));
     await usdc777.wrap(toWei('10', 'ether'));

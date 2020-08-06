@@ -26,8 +26,8 @@ group('Balancer', (accounts) => {
     ({ dai, aave } = await getDefiAddresses());
 
     const factory = await WrapperFactory.new();
-    await factory.create(dai);
-    dai777 = await Wrapped777.at(await factory.getWrapper(dai));
+    await factory.createWrapper(dai);
+    dai777 = await Wrapped777.at(await factory.calculateWrapperAddress(dai));
 
     const daiToken = await IERC20.at(dai);
     await daiToken.approve(dai777.address, toWei('100', 'ether'));
@@ -39,10 +39,10 @@ group('Balancer', (accounts) => {
     const token1 = await TestERC20.new();
     const token2 = await TestERC20.new();
 
-    await factory.create(token1.address);
-    await factory.create(token2.address);
-    const wrapper1Address = await factory.getWrapper(token1.address);
-    const wrapper2Address = await factory.getWrapper(token2.address);
+    await factory.createWrapper(token1.address);
+    await factory.createWrapper(token2.address);
+    const wrapper1Address = await factory.calculateWrapperAddress(token1.address);
+    const wrapper2Address = await factory.calculateWrapperAddress(token2.address);
     const wrapper1 = await Wrapped777.at(wrapper1Address);
     const wrapper2 = await Wrapped777.at(wrapper2Address);
 

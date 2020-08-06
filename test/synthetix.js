@@ -28,13 +28,13 @@ group('Synthetix', (accounts) => {
     const synthetix = await TestSynthetix.new();
 
     const susdAddress = await synthetix.synths(web3.utils.fromUtf8('sUSD'));
-    await wrapperFactory.create(susdAddress);
-    const susdWrapperAddress = await wrapperFactory.getWrapper(susdAddress);
+    await wrapperFactory.createWrapper(susdAddress);
+    const susdWrapperAddress = await wrapperFactory.calculateWrapperAddress(susdAddress);
     const susdWrapper = await Wrapped777.at(susdWrapperAddress);
 
     const sbtcAddress = await synthetix.synths(web3.utils.fromUtf8('sBTC'));
-    await wrapperFactory.create(sbtcAddress);
-    const sbtcWrapperAddress = await wrapperFactory.getWrapper(sbtcAddress);
+    await wrapperFactory.createWrapper(sbtcAddress);
+    const sbtcWrapperAddress = await wrapperFactory.calculateWrapperAddress(sbtcAddress);
     const sbtcWrapper = await Wrapped777.at(sbtcWrapperAddress);
 
     const synthxFactory = await SynthExchangeFactory.new(synthetix.address, '0x0000000000000000000000000000000000000000');
@@ -62,8 +62,8 @@ group('Synthetix', (accounts) => {
     await susd.issue(uniswapRouter.address, eth('1'));
 
     const sbtcAddress = await synthetix.synths(web3.utils.fromUtf8('sBTC'));
-    await wrapperFactory.create(sbtcAddress);
-    const sbtcWrapperAddress = await wrapperFactory.getWrapper(sbtcAddress);
+    await wrapperFactory.createWrapper(sbtcAddress);
+    const sbtcWrapperAddress = await wrapperFactory.calculateWrapperAddress(sbtcAddress);
     const sbtcWrapper = await Wrapped777.at(sbtcWrapperAddress);
 
     const synthxFactory = await SynthExchangeFactory.new(synthetix.address, uniswapRouter.address);
@@ -82,8 +82,8 @@ group('Synthetix', (accounts) => {
     const synthetix = await TestSynthetix.new();
     const token1 = await TestERC20.new();
 
-    await wrapperFactory.create(token1.address);
-    const wrapper1Address = await wrapperFactory.getWrapper(token1.address);
+    await wrapperFactory.createWrapper(token1.address);
+    const wrapper1Address = await wrapperFactory.calculateWrapperAddress(token1.address);
     const wrapper1 = await Wrapped777.at(wrapper1Address);
     await token1.approve(wrapper1Address, eth('2'));
     await wrapper1.wrap(eth('2'));
@@ -93,8 +93,8 @@ group('Synthetix', (accounts) => {
     await susd.issue(uniswapRouter.address, eth('1'));
 
     const sbtcAddress = await synthetix.synths(web3.utils.fromUtf8('sBTC'));
-    await wrapperFactory.create(sbtcAddress);
-    const sbtcWrapperAddress = await wrapperFactory.getWrapper(sbtcAddress);
+    await wrapperFactory.createWrapper(sbtcAddress);
+    const sbtcWrapperAddress = await wrapperFactory.calculateWrapperAddress(sbtcAddress);
     const sbtcWrapper = await Wrapped777.at(sbtcWrapperAddress);
 
     const synthxFactory = await SynthExchangeFactory.new(synthetix.address, uniswapRouter.address);

@@ -7,6 +7,7 @@ import "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../Receiver.sol";
 import "./ERC777WithGranularity.sol";
+import "./IWrapperFactory.sol";
 import "./IWrapped777.sol";
 import "./IPermit.sol";
 
@@ -15,8 +16,8 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
 
   string public constant WRAPPER_VERSION = "0.2.0";
 
-  ERC20 public override token;
-  address public override factory;
+  ERC20 public immutable override token;
+  address public immutable override factory;
 
   ////////// For flashloans:
   event FlashLoan(address indexed target, uint256 amount);
@@ -24,22 +25,20 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
 
 
   ////////// For permit:
-  bytes32 public DOMAIN_SEPARATOR;
+  bytes32 public immutable DOMAIN_SEPARATOR;
   // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
   bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
   mapping(address => uint) public nonces;
 
-  constructor(ERC20 _token)
-    public
-    ERC777WithGranularity()
-  {
-    token = _token;
+  constructor() public {
+    address _token = IWrapperFactory(msg.sender).nextToken();
+    token = ERC20(_token);
     factory = msg.sender;
 
-    _name = string(abi.encodePacked(SafeERC20Namer.tokenName(address(_token)), "-777"));
-    _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(address(_token)), "777"));
+    _name = string(abi.encodePacked(SafeERC20Namer.tokenName(_token), "-777"));
+    _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(_token), "777"));
 
-    setDecimals(_token.decimals());
+    setDecimals(ERC20(_token).decimals());
 
     ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Wrapped777"), address(this));
 

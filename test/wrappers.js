@@ -24,8 +24,8 @@ group('Wrapped777', (accounts) => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
@@ -47,8 +47,8 @@ group('Wrapped777', (accounts) => {
     const token = await TestERC2612.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
@@ -66,8 +66,8 @@ group('Wrapped777', (accounts) => {
     const token = await TestDai.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
@@ -85,8 +85,8 @@ group('Wrapped777', (accounts) => {
     const token = await TestUSDC.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     expect(await str(token.balanceOf(defaultSender))).to.equal('100000000');
@@ -108,8 +108,8 @@ group('Wrapped777', (accounts) => {
     const mkr = await TestMKR.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(mkr.address);
-    const wrapperAddress = await factory.getWrapper(mkr.address);
+    await factory.createWrapper(mkr.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(mkr.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
     expect(await wrapper.symbol()).to.equal('MKR777');
   });
@@ -118,13 +118,13 @@ group('Wrapped777', (accounts) => {
     const token = await TestERC20.new();
 
     const factory1 = await WrapperFactory.new();
-    await factory1.create(token.address);
-    const wrapper1Address = await factory1.getWrapper(token.address);
+    await factory1.createWrapper(token.address);
+    const wrapper1Address = await factory1.calculateWrapperAddress(token.address);
     const wrapper1 = await Wrapped777.at(wrapper1Address);
 
     const factory2 = await WrapperFactory.new();
-    await factory2.create(token.address);
-    const wrapper2Address = await factory2.getWrapper(token.address);
+    await factory2.createWrapper(token.address);
+    const wrapper2Address = await factory2.calculateWrapperAddress(token.address);
     const wrapper2 = await Wrapped777.at(wrapper2Address);
 
     await token.approve(wrapper1Address, eth('10'));
@@ -140,8 +140,8 @@ group('Wrapped777', (accounts) => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
     const tester = await TestFlashLoanRecipient.new();

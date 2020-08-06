@@ -27,8 +27,8 @@ group('Aave', (accounts) => {
     ({ dai, aave } = await getDefiAddresses());
 
     const factory = await WrapperFactory.new();
-    await factory.create(dai);
-    dai777 = await Wrapped777.at(await factory.getWrapper(dai));
+    await factory.createWrapper(dai);
+    dai777 = await Wrapped777.at(await factory.calculateWrapperAddress(dai));
 
     const daiToken = await IERC20.at(dai);
     await daiToken.approve(dai777.address, toWei('100', 'ether'));

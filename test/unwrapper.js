@@ -19,8 +19,8 @@ group('Unwrapper', (accounts) => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);;
 
     await token.approve(wrapperAddress, toWei('10', 'ether'));
@@ -40,8 +40,8 @@ group('Unwrapper', (accounts) => {
     const token = await TestUSDC.new();
     const factory = await WrapperFactory.new();
 
-    await factory.create(token.address);
-    const wrapperAddress = await factory.getWrapper(token.address);
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);;
 
     await token.approve(wrapperAddress, '10000000');
