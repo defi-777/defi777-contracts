@@ -16,10 +16,12 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   ERC20 public override token;
   address public override factory;
 
+  ////////// For flashloans:
   event FlashLoan(address indexed target, uint256 amount);
-
   mapping(address => uint256) private borrows;
 
+
+  ////////// For permit:
   bytes32 public DOMAIN_SEPARATOR;
   // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
   bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
