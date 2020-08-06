@@ -1,7 +1,6 @@
 {
   "name": "defi-777-contracts",
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
   "scripts": {
     "build": "truffle build",
@@ -9,6 +8,9 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.0.0",
+    "@uniswap/lib": "^1.1.2"
+  },
+  "devDependencies": {
     "@openzeppelin/test-environment": "^0.1.4",
     "@openzeppelin/test-helpers": "^0.5.5",
     "@truffle/hdwallet-provider": "^1.0.35",

@@ -108,7 +108,7 @@ group('Wrapped777', (accounts) => {
     const mkr = await TestMKR.new();
     const factory = await WrapperFactory.new();
 
-    await factory.createWithName(mkr.address, 'Maker777', 'MKR777');
+    await factory.create(mkr.address);
     const wrapperAddress = await factory.getWrapper(mkr.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
     expect(await wrapper.symbol()).to.equal('MKR777');

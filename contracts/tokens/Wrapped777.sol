@@ -3,6 +3,8 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
+import "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../Receiver.sol";
 import "./ERC777WithGranularity.sol";
 import "./IWrapped777.sol";
@@ -27,24 +29,15 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   bytes32 public constant PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
   mapping(address => uint) public nonces;
 
-  constructor(ERC20 _token, string memory name, string memory symbol)
+  constructor(ERC20 _token)
     public
     ERC777WithGranularity()
   {
     token = _token;
     factory = msg.sender;
 
-    if (bytes(name).length == 0) {
-      _name = string(abi.encodePacked(token.name(), "-777"));
-    } else {
-      _name = name;
-    }
-
-    if (bytes(symbol).length == 0) {
-      _symbol = string(abi.encodePacked(token.symbol(), "777"));
-    } else {
-      _symbol = symbol;
-    }
+    _name = string(abi.encodePacked(SafeERC20Namer.tokenName(address(_token)), "-777"));
+    _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(address(_token)), "777"));
 
     setDecimals(_token.decimals());
 
@@ -86,7 +79,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   }
 
   function _wrap(address sender, uint256 amount) private returns (uint256) {
-    token.transferFrom(sender, address(this), amount);
+    TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
     uint256 adjustedAmount = from20to777(amount);
     _mint(sender, adjustedAmount, "", "");
@@ -95,7 +88,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
 
   function wrapTo(uint256 amount, address recipient) external override returns (uint256) {
     address sender = _msgSender();
-    token.transferFrom(sender, address(this), amount);
+    TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
     uint256 adjustedAmount = from20to777(amount);
     _mint(recipient, adjustedAmount, "", "");
@@ -115,7 +108,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     }
 
     uint256 adjustedAmount = from777to20(amount);
-    token.transfer(from, adjustedAmount);
+    TransferHelper.safeTransfer(address(token), from, adjustedAmount);
   }
 
   function flashLoan(address target, uint256 amount, bytes calldata data) external {
@@ -132,7 +125,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
       revert("INVALID_TOKEN");
     }
 
-    Wrapped777(oldWrapper).transfer(oldWrapper, amount);
+    TransferHelper.safeTransfer(oldWrapper, oldWrapper, amount);
 
     uint256 adjustedAmount = from20to777(token.balanceOf(address(this)));
     _mint(sender, adjustedAmount, "", "");

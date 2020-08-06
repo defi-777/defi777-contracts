@@ -13,14 +13,7 @@ contract WrapperFactory {
   function create(address token) external {
     require(address(wrappers[token]) == address(0));
 
-    Wrapped777 wrapper = new Wrapped777{salt: bytes32(0)}(ERC20(token), '', '');
-    wrappers[token] = wrapper;
-  }
-
-  function createWithName(address token, string calldata name, string calldata symbol) external /* ownable */ {
-    require(address(wrappers[token]) == address(0));
-
-    Wrapped777 wrapper = new Wrapped777{salt: bytes32(0)}(ERC20(token), name, symbol);
+    Wrapped777 wrapper = new Wrapped777{salt: bytes32(0)}(ERC20(token));
     wrappers[token] = wrapper;
   }
 }
