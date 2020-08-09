@@ -1,18 +1,19 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "../../tokens/Wrapped777.sol";
-import "./IUniswapV2Router01.sol";
 import "../../Receiver.sol";
+import "./IUniswapV2Router01.sol";
+import "./IUniswapWrapperFactory.sol";
 
 contract UniswapWrapper is Receiver {
-  Wrapped777 public wrapper;
-  IUniswapV2Router01 public router;
+  Wrapped777 public immutable wrapper;
+  IUniswapV2Router01 public immutable router;
 
   bool private wrapping = false;
 
-  constructor(Wrapped777 _wrapper, address _router) public {
-    wrapper = _wrapper;
-    router = IUniswapV2Router01(_router);
+  constructor() public {
+    wrapper = Wrapped777(IUniswapWrapperFactory(msg.sender).nextToken());
+    router = IUniswapV2Router01(IUniswapWrapperFactory(msg.sender).uniswapRouter());
   }
 
   receive() external payable {

@@ -31,7 +31,7 @@ group('Uniswap', (accounts) => {
 
     const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
     await uniswapFactory.createExchange(wrapper.address);
-    const exchangeAddress = await uniswapFactory.getWrapper(wrapper.address);
+    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper.address);
     const exchange = await UniswapWrapper.at(exchangeAddress);
 
     await exchange.sendTransaction({ value: toWei('1', 'ether'), from: user });
@@ -55,7 +55,7 @@ group('Uniswap', (accounts) => {
 
     const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
     await uniswapFactory.createExchange(wrapper.address);
-    const exchangeAddress = await uniswapFactory.getWrapper(wrapper.address);
+    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper.address);
     const exchange = await UniswapWrapper.at(exchangeAddress);
 
     const startingBalance = await web3.eth.getBalance(user)
@@ -88,7 +88,7 @@ group('Uniswap', (accounts) => {
 
     const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
     await uniswapFactory.createExchange(wrapper1.address);
-    const exchangeAddress = await uniswapFactory.getWrapper(wrapper1.address);
+    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper1.address);
     const exchange = await UniswapWrapper.at(exchangeAddress);
 
     await wrapper2.transfer(exchangeAddress, toWei('1', 'ether'), { from: user });
