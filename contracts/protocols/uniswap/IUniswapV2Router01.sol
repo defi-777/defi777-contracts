@@ -1,9 +1,11 @@
 pragma solidity >=0.6.2;
 
+import './IUniswapV2Factory.sol';
 // import './IUniswapV2Library.sol';
 
 interface IUniswapV2Router01 /*is IUniswapV2Library*/ {
     function WETH() external pure returns (address);
+    function factory() external view returns (IUniswapV2Factory);
 
     // function addLiquidity(
     //     address tokenA,
