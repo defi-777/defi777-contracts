@@ -11,7 +11,9 @@ contract WrapperFactory is IWrapperFactory {
 
   address private _nextToken;
 
-  bytes32 constant WRAPPER_BYTECODE_HASH = keccak256(type(Wrapped777).creationCode);
+  bytes32 public constant WRAPPER_BYTECODE_HASH = keccak256(type(Wrapped777).creationCode);
+
+  event WrapperCreated(address token);
 
   function calculateWrapperAddress(address token) public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
@@ -26,6 +28,8 @@ contract WrapperFactory is IWrapperFactory {
     _nextToken = token;
     new Wrapped777{salt: bytes32(uint(token))}();
     _nextToken = address(0);
+
+    emit WrapperCreated(token);
   }
 
   function getWrapperAddress(address token) public returns (address wrapperAddress) {
