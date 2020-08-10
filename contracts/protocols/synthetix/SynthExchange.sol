@@ -5,22 +5,25 @@ import "../../tokens/Wrapped777.sol";
 import "../uniswap/IUniswapV2Router01.sol";
 import "./interfaces/ISynthetix.sol";
 import "../../Receiver.sol";
+import "./ISynthExchangeFactory.sol";
 
 contract SynthExchange is Receiver {
-  Wrapped777 public outputWrapper;
-  IUniswapV2Router01 public router;
-  ISynthetix public snx;
-  bytes32 public outputKey;
+  Wrapped777 public immutable outputWrapper;
+  IUniswapV2Router01 public immutable router;
+  ISynthetix public immutable snx;
+  bytes32 public immutable outputKey;
 
   bytes32 constant private SUSD = 0x7355534400000000000000000000000000000000000000000000000000000000;
 
   bool private wrapping = false;
 
-  constructor(Wrapped777 _output, address _snx, address _router) public {
-    outputWrapper = _output;
-    snx = ISynthetix(_snx);
-    router = IUniswapV2Router01(_router);
-    outputKey = snx.synthsByAddress(address(_output.token()));
+  constructor() public {
+    Wrapped777 _outputWrapper = Wrapped777(ISynthExchangeFactory(msg.sender).nextWrapper());
+    outputWrapper = _outputWrapper;
+    ISynthetix _snx = ISynthetix(ISynthExchangeFactory(msg.sender).snx());
+    snx = _snx;
+    router = IUniswapV2Router01(ISynthExchangeFactory(msg.sender).uniswapRouter());
+    outputKey = _snx.synthsByAddress(address(_outputWrapper.token()));
   }
 
   receive() external payable {

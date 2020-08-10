@@ -2,34 +2,35 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../../tokens/Wrapped777.sol";
+import "./ISynthExchangeFactory.sol";
 import "./SynthExchange.sol";
 
-contract SynthExchangeFactory {
+contract SynthExchangeFactory is ISynthExchangeFactory {
   using Address for address;
 
-  address public snx;
-  address public uniswapRouter;
+  address private _snx;
+  address private _uniswapRouter;
+  address private _nextWrapper;
 
-  constructor(address _snx, address _uniswapRouter) public {
-    snx = _snx;
-    uniswapRouter = _uniswapRouter;
+  bytes32 public constant EXCHANGE_BYTECODE_HASH = keccak256(type(SynthExchange).creationCode);
+
+  constructor(address __snx, address __uniswapRouter) public {
+    _snx = __snx;
+    _uniswapRouter = __uniswapRouter;
   }
 
   function createExchange(address outputWrapper) public {    
-    new SynthExchange{salt: bytes32(0)}(Wrapped777(outputWrapper), snx, uniswapRouter);
+    _nextWrapper = outputWrapper;
+    new SynthExchange{salt: bytes32(uint(outputWrapper))}();
+    _nextWrapper = address(0);
   }
 
   function calculateExchangeAddress(address outputWrapper) public view returns (address calculatedAddress) { 
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
       byte(0xff),
       address(this),
-      bytes32(0),
-      keccak256(abi.encodePacked(
-        type(SynthExchange).creationCode,
-        uint256(outputWrapper),
-        uint256(snx),
-        uint256(uniswapRouter)
-      ))
+      bytes32(uint(outputWrapper)),
+      EXCHANGE_BYTECODE_HASH
     ))));
   }
 
@@ -40,5 +41,17 @@ contract SynthExchangeFactory {
       createExchange(outputWrapper);
       assert(wrapperAddress.isContract());
     }
+  }
+
+  function snx() external override view returns (address) {
+    return _snx;
+  }
+
+  function uniswapRouter() external override view returns (address) {
+    return _uniswapRouter;
+  }
+
+  function nextWrapper() external override view returns (address) {
+    return _nextWrapper;
   }
 }
