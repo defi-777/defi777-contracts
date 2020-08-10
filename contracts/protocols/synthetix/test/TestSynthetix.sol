@@ -14,7 +14,8 @@ contract TestSynthetix is ISynthetix {
 
   constructor() public {
     makeSynth("sUSD", 1);
-    makeSynth("sBTC", 2);
+    makeSynth("sBTC", 4);
+    makeSynth("sETH", 2);
   }
 
   function makeSynth(string memory symbol, uint256 price) private {

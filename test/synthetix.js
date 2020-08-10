@@ -48,7 +48,7 @@ group('Synthetix', (accounts) => {
 
     await susdWrapper.transfer(sbtcExchange, eth('2'));
 
-    expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('1'));
+    expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('0.5'));
   });
 
 
@@ -57,9 +57,9 @@ group('Synthetix', (accounts) => {
     const synthetix = await TestSynthetix.new();
     const uniswapRouter = await TestUniswapRouter.new();
 
-    const susdAddress = await synthetix.synths(web3.utils.fromUtf8('sUSD'));
-    const susd = await TestSynth.at(susdAddress);
-    await susd.issue(uniswapRouter.address, eth('1'));
+    const sethAddress = await synthetix.synths(web3.utils.fromUtf8('sETH'));
+    const seth = await TestSynth.at(sethAddress);
+    await seth.issue(uniswapRouter.address, eth('1'));
 
     const sbtcAddress = await synthetix.synths(web3.utils.fromUtf8('sBTC'));
     await wrapperFactory.createWrapper(sbtcAddress);
@@ -103,6 +103,6 @@ group('Synthetix', (accounts) => {
     const sbtcExchange = await SynthExchange.at(sbtcExchangeAddress);
 
     await wrapper1.transfer(sbtcExchangeAddress, eth('1'), { from: defaultSender });
-    expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('0.5'));
+    expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('0.25'));
   });
 });

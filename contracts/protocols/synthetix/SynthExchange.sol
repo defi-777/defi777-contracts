@@ -14,6 +14,7 @@ contract SynthExchange is Receiver {
   bytes32 public immutable outputKey;
 
   bytes32 constant private SUSD = 0x7355534400000000000000000000000000000000000000000000000000000000;
+  bytes32 constant private SETH = 0x7345544800000000000000000000000000000000000000000000000000000000;
 
   bool private wrapping = false;
 
@@ -29,11 +30,11 @@ contract SynthExchange is Receiver {
   receive() external payable {
     address[] memory path = new address[](2);
     path[0] = router.WETH();
-    path[1] = address(snx.synths(SUSD));
+    path[1] = address(snx.synths(SETH));
 
     router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
 
-    uint256 outputAmount = synthExchange(SUSD);
+    uint256 outputAmount = synthExchange(SETH);
 
     wrapAndReturn(msg.sender, outputAmount);
   }
@@ -80,7 +81,7 @@ contract SynthExchange is Receiver {
   function wrapAndReturn(address recipient, uint256 amount) private {
     wrapping = true;
     outputWrapper.token().approve(address(outputWrapper), amount);
-    uint256 wrappedAmount = outputWrapper.wrapTo(amount, recipient);
+    outputWrapper.wrapTo(amount, recipient);
     wrapping = false;
   }
 }
