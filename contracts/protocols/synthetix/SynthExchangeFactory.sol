@@ -14,6 +14,8 @@ contract SynthExchangeFactory is ISynthExchangeFactory {
 
   bytes32 public constant EXCHANGE_BYTECODE_HASH = keccak256(type(SynthExchange).creationCode);
 
+  event ExchangeCreated(address token);
+
   constructor(address __snx, address __uniswapRouter) public {
     _snx = __snx;
     _uniswapRouter = __uniswapRouter;
@@ -23,6 +25,8 @@ contract SynthExchangeFactory is ISynthExchangeFactory {
     _nextWrapper = outputWrapper;
     new SynthExchange{salt: bytes32(uint(outputWrapper))}();
     _nextWrapper = address(0);
+
+    emit ExchangeCreated(outputWrapper);
   }
 
   function calculateExchangeAddress(address outputWrapper) public view returns (address calculatedAddress) { 

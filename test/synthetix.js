@@ -51,6 +51,28 @@ group('Synthetix', (accounts) => {
     expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('0.5'));
   });
 
+  it('Should swap ETH for sETH', async () => {
+    const wrapperFactory = await WrapperFactory.new();
+    const synthetix = await TestSynthetix.new();
+    const uniswapRouter = await TestUniswapRouter.new();
+
+    const sethAddress = await synthetix.synths(web3.utils.fromUtf8('sETH'));
+    const seth = await TestSynth.at(sethAddress);
+    await seth.issue(uniswapRouter.address, eth('1'));
+
+    await wrapperFactory.createWrapper(sethAddress);
+    const sethWrapperAddress = await wrapperFactory.calculateWrapperAddress(sethAddress);
+    const sethWrapper = await Wrapped777.at(sethWrapperAddress);
+
+    const synthxFactory = await SynthExchangeFactory.new(synthetix.address, uniswapRouter.address);
+    await synthxFactory.createExchange(sethWrapperAddress);
+    const sbtcExchangeAddress = await synthxFactory.calculateExchangeAddress(sethWrapperAddress);
+    const sbtcExchange = await SynthExchange.at(sbtcExchangeAddress);
+
+    await sbtcExchange.sendTransaction({ value: eth('1'), from: defaultSender });
+
+    expect(await str(sethWrapper.balanceOf(defaultSender))).to.equal(eth('1'));
+  });
 
   it('Should swap ETH for sBTC', async () => {
     const wrapperFactory = await WrapperFactory.new();
@@ -74,6 +96,35 @@ group('Synthetix', (accounts) => {
     await sbtcExchange.sendTransaction({ value: eth('1'), from: defaultSender });
 
     expect(await str(sbtcWrapper.balanceOf(defaultSender))).to.equal(eth('0.5'));
+  });
+
+  it('Should swap a 777 token for sUSD', async () => {
+    const wrapperFactory = await WrapperFactory.new();
+    const uniswapRouter = await TestUniswapRouter.new();
+    const synthetix = await TestSynthetix.new();
+    const token1 = await TestERC20.new();
+
+    await wrapperFactory.createWrapper(token1.address);
+    const wrapper1Address = await wrapperFactory.calculateWrapperAddress(token1.address);
+    const wrapper1 = await Wrapped777.at(wrapper1Address);
+    await token1.approve(wrapper1Address, eth('2'));
+    await wrapper1.wrap(eth('2'));
+
+    const susdAddress = await synthetix.synths(web3.utils.fromUtf8('sUSD'));
+    const susd = await TestSynth.at(susdAddress);
+    await susd.issue(uniswapRouter.address, eth('1'));
+
+    await wrapperFactory.createWrapper(susdAddress);
+    const susdWrapperAddress = await wrapperFactory.calculateWrapperAddress(susdAddress);
+    const susdWrapper = await Wrapped777.at(susdWrapperAddress);
+
+    const synthxFactory = await SynthExchangeFactory.new(synthetix.address, uniswapRouter.address);
+    await synthxFactory.createExchange(susdWrapperAddress);
+    const susdExchangeAddress = await synthxFactory.calculateExchangeAddress(susdWrapperAddress);
+    const susdExchange = await SynthExchange.at(susdExchangeAddress);
+
+    await wrapper1.transfer(susdExchangeAddress, eth('1'), { from: defaultSender });
+    expect(await str(susdWrapper.balanceOf(defaultSender))).to.equal(eth('1'));
   });
 
   it('Should swap a 777 token for sBTC', async () => {

@@ -32,9 +32,14 @@ contract SynthExchange is Receiver {
     path[0] = router.WETH();
     path[1] = address(snx.synths(SETH));
 
-    router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
+    uint256[] memory outputs = router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
 
-    uint256 outputAmount = synthExchange(SETH);
+    uint256 outputAmount;
+    if (outputKey == SETH) {
+      outputAmount = outputs[2];
+    } else {
+      outputAmount = synthExchange(SETH);
+    }
 
     wrapAndReturn(msg.sender, outputAmount);
   }
@@ -48,14 +53,17 @@ contract SynthExchange is Receiver {
     _token.send(address(_token), amount, "");
 
     ERC20 unwrappedToken = _wrapper.token();
+    uint256 outputAmount;
 
     bytes32 inputKey = snx.synthsByAddress(address(unwrappedToken));
     if (inputKey == bytes32(0)) {
-      swapToSUSD(unwrappedToken);
+      outputAmount = swapToSUSD(unwrappedToken);
       inputKey = SUSD;
     }
 
-    uint256 outputAmount = synthExchange(inputKey);
+    if (inputKey != outputKey) {
+      outputAmount = synthExchange(inputKey);
+    }
 
     wrapAndReturn(from, outputAmount);
   }
@@ -66,7 +74,7 @@ contract SynthExchange is Receiver {
     return snx.exchange(inputKey, amount, outputKey);
   }
 
-  function swapToSUSD(ERC20 token) private {
+  function swapToSUSD(ERC20 token) private returns (uint256) {
     uint unwrappedBalance = token.balanceOf(address(this));
     token.approve(address(router), unwrappedBalance);
 
@@ -75,7 +83,9 @@ contract SynthExchange is Receiver {
     path[1] = router.WETH();
     path[2] = address(snx.synths(SUSD));
 
-    router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
+    uint256[] memory outputs = router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
+
+    return outputs[3];
   }
 
   function wrapAndReturn(address recipient, uint256 amount) private {

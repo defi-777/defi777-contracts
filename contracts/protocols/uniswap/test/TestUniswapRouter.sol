@@ -32,24 +32,36 @@ contract TestUniswapRouter is IUniswapV2Router01 {
       address[] calldata path,
       address to,
       uint /*deadline*/
-  ) external override returns (uint[] memory /*amounts*/) {
+  ) external override returns (uint[] memory amounts) {
     IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
     IERC20(path[path.length - 1]).transfer(to, amountIn);
+
+    amounts = new uint[](path.length + 1);
+    amounts[0] = amountIn;
+    amounts[amounts.length - 1] = amountIn;
   }
 
   function swapExactETHForTokens(uint /*amountOutMin*/, address[] calldata path, address to, uint /*deadline*/)
     external override
     payable
-    returns (uint[] memory /*amounts*/)
+    returns (uint[] memory amounts)
   {
     IERC20(path[path.length - 1]).transfer(to, msg.value);
+
+    amounts = new uint[](path.length + 1);
+    amounts[0] = msg.value;
+    amounts[amounts.length - 1] = msg.value;
   }
 
   function swapExactTokensForETH(uint amountIn, uint /*amountOutMin*/, address[] calldata path, address to, uint /*deadline*/)
     external override
-    returns (uint[] memory /*amounts*/)
+    returns (uint[] memory amounts)
   {
     IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
     payable(to).transfer(amountIn);
+
+    amounts = new uint[](path.length + 1);
+    amounts[0] = amountIn;
+    amounts[amounts.length - 1] = amountIn;
   }
 }
