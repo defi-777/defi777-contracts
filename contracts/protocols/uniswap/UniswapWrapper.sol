@@ -9,15 +9,20 @@ import "./IUniswapWrapperFactory.sol";
 contract UniswapWrapper is Receiver {
   Wrapped777 public immutable wrapper;
   IUniswapV2Router01 public immutable router;
-  IUniswapV2Factory public immutable factory;
+  IUniswapV2Factory public immutable uniswapFactory;
 
   bool private wrapping = false;
 
+  uint256 private constant INFINITY = uint256(-1);
+
   constructor() public {
-    wrapper = Wrapped777(IUniswapWrapperFactory(msg.sender).nextToken());
-    IUniswapV2Router01 _router = IUniswapV2Router01(IUniswapWrapperFactory(msg.sender).uniswapRouter());
+    IUniswapWrapperFactory factory = IUniswapWrapperFactory(msg.sender);
+    Wrapped777 _wrapper = Wrapped777(factory.nextToken());
+    wrapper = _wrapper;
+    IUniswapV2Router01 _router = IUniswapV2Router01(factory.uniswapRouter());
     router = _router;
-    factory = _router.factory();
+    uniswapFactory = _router.factory();
+    infiniteApprove(_wrapper.token(), address(_wrapper), 1);
   }
 
   receive() external payable {
@@ -27,9 +32,9 @@ contract UniswapWrapper is Receiver {
     path[0] = router.WETH();
     path[1] = address(wrapper.token());
 
-    router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
+    uint256[] memory outputs = router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
 
-    wrapAndReturn(msg.sender);
+    wrapAndReturn(msg.sender, outputs[2]);
   }
 
   /**
@@ -47,9 +52,8 @@ contract UniswapWrapper is Receiver {
     ERC20 unwrappedInput = inputWrapper.token();
     ERC20 outputToken = wrapper.token();
 
-    _token.send(address(_token), amount, "");
-    uint unwrappedBalance = unwrappedInput.balanceOf(address(this));
-    inputWrapper.token().approve(address(router), unwrappedBalance);
+    uint unwrappedBalance = inputWrapper.unwrap(amount);
+    infiniteApprove(unwrappedInput, address(router), unwrappedBalance);
 
     if (address(_token) == address(wrapper)) {
       address[] memory path = new address[](2);
@@ -60,7 +64,7 @@ contract UniswapWrapper is Receiver {
     } else {
       address[] memory path;
 
-      if (factory.getPair(address(unwrappedInput), address(outputToken)) == address(0)) {
+      if (uniswapFactory.getPair(address(unwrappedInput), address(outputToken)) == address(0)) {
         path = new address[](3);
         path[0] = address(unwrappedInput);
         path[1] = router.WETH();
@@ -71,17 +75,22 @@ contract UniswapWrapper is Receiver {
         path[1] = address(outputToken);
       }
 
-      router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
+      uint256[] memory outputs = router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
 
-      wrapAndReturn(from);
+      wrapAndReturn(from, outputs[path.length]);
     }
   }
 
-  function wrapAndReturn(address recipient) private {
+  function wrapAndReturn(address recipient, uint256 amount) private {
     wrapping = true;
-    uint256 amount = wrapper.token().balanceOf(address(this));
-    wrapper.token().approve(address(wrapper), amount);
+    infiniteApprove(wrapper.token(), address(wrapper), amount);
     wrapper.wrapTo(amount, recipient);
     wrapping = false;
+  }
+
+  function infiniteApprove(ERC20 token, address spender, uint256 amount) private {
+    if (token.allowance(address(this), spender) < amount) {
+      token.approve(spender, INFINITY);
+    }
   }
 }
