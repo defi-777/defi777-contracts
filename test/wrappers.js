@@ -4,6 +4,7 @@ const { signDaiPermit, signERC2612Permit } = require('eth-permit');
 const { setChainIdOverride } = require('eth-permit/dist/rpc');
 const { expect } = require('chai');
 
+const MaliciousUpgradeToken = getContract('MaliciousUpgradeToken');
 const TestERC20 = getContract('TestERC20');
 const TestERC2612 = getContract('TestERC2612');
 const TestUSDC = getContract('TestUSDC');
@@ -133,7 +134,21 @@ group('Wrapped777', (accounts) => {
     await wrapper1.transfer(wrapper2Address, eth('10'));
 
     expect(await str(wrapper2.balanceOf(defaultSender))).to.equal(eth('10'));
+  });
 
+  it('should not allow fake tokens to execute upgrades', async () => {
+    const token = await TestERC20.new();
+    const fakeToken = await MaliciousUpgradeToken.new(token.address);
+
+    const factory = await WrapperFactory.new();
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+
+    await token.approve(wrapperAddress, eth('10'));
+    await wrapper.wrap(eth('10'));
+
+    await expectRevert(fakeToken.callReceiveHook(wrapperAddress), 'Upgrade: no tokens');
   });
 
   it('Should issue flash loans', async () => {
@@ -150,7 +165,7 @@ group('Wrapped777', (accounts) => {
 
     await expectRevert(
       tester.runInvalidFlashLoan(wrapper.address, toWei('10', 'ether')),
-      'Flash loan was not returned',
+      'Flash loan not returned',
     );
   });
 

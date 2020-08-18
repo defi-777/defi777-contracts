@@ -114,7 +114,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     borrows[target] = borrows[target].add(amount);
     _mint(target, amount, data, '');
 
-    require(borrows[target] == 0, 'Flash loan was not returned');
+    require(borrows[target] == 0, 'Flash loan not returned');
 
     emit FlashLoan(target, amount);
   }
@@ -124,10 +124,16 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
       revert("INVALID_TOKEN");
     }
 
+    uint256 startingBalance = token.balanceOf(address(this));
+
     TransferHelper.safeTransfer(oldWrapper, oldWrapper, amount);
 
-    uint256 adjustedAmount = from20to777(token.balanceOf(address(this)));
-    _mint(sender, adjustedAmount, "", "");
+    uint256 endBalance = token.balanceOf(address(this));
+
+    uint256 numUpgradedTokens = from20to777(endBalance.sub(startingBalance));
+    require(numUpgradedTokens > 0, "Upgrade: no tokens");
+
+    _mint(sender, numUpgradedTokens, "", "");
   }
 
   function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
