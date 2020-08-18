@@ -17,7 +17,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   string public constant WRAPPER_VERSION = "0.2.0";
 
   ERC20 public immutable override token;
-  address public immutable override factory;
+  address public immutable factory;
 
   ////////// For flashloans:
   event FlashLoan(address indexed target, uint256 amount);
@@ -92,6 +92,22 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     uint256 adjustedAmount = from20to777(amount);
     _mint(recipient, adjustedAmount, "", "");
     return adjustedAmount;
+  }
+
+  function unwrap(uint256 amount) external override returns (uint256 unwrappedAmount) {
+    address sender = _msgSender();
+    return _unwrap(amount, sender, sender);
+  }
+
+  function unwrapTo(uint256 amount, address recipient) external override returns (uint256 unwrappedAmount) {
+    return _unwrap(amount, _msgSender(), recipient);
+  }
+
+  function _unwrap(uint256 amount, address from, address recipient) private returns (uint256 unwrappedAmount) {
+    _burn(from, amount, "", "");
+
+    unwrappedAmount = from777to20(amount);
+    TransferHelper.safeTransfer(address(token), recipient, unwrappedAmount);
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory data) internal override {

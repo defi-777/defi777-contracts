@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../Receiver.sol";
 import "../../tokens/IWrapped777.sol";
 import "./ERC777WithoutBalance.sol";
@@ -16,8 +17,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
   using WadRayMath for uint256;
   using SafeMath for uint256;
 
-  ERC20 public override token;
-  address public override factory;
+  ERC20 public immutable override token;
 
   IWrapped777 public immutable reserveWrapper;
   ERC20 public reserve;
@@ -43,12 +43,13 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
     whitelistReceiveToken(address(this));
     whitelistReceiveToken(address(_reserveWrapper));
 
-    token = ERC20(lendingPool.core().getReserveATokenAddress(address(reserve)));
+    ERC20 _token = ERC20(_lendingPool.core().getReserveATokenAddress(address(_reserve)));
+    token = _token;
 
-    _name = string(abi.encodePacked(token.name(), "-777"));
-    _symbol = string(abi.encodePacked(token.symbol(), "777"));
+    _name = string(abi.encodePacked(_token.name(), "-777"));
+    _symbol = string(abi.encodePacked(_token.symbol(), "777"));
 
-    setDecimals(token.decimals());
+    setDecimals(_token.decimals());
     _ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("AToken777"), address(this));
   }
 
@@ -122,6 +123,25 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
 
     outAmount = from20to777(amount);
     _mint(recipient, outAmount, "", "");
+  }
+
+  function unwrap(uint256 amount) external override returns (uint256 unwrappedAmount) {
+    address sender = _msgSender();
+    return _unwrap(amount, sender, sender);
+  }
+
+  function unwrapTo(uint256 amount, address recipient) external override returns (uint256 unwrappedAmount) {
+    return _unwrap(amount, _msgSender(), recipient);
+  }
+
+  function _unwrap(uint256 amount, address from, address recipient) private returns (uint256 unwrappedAmount) {
+    update(from);
+
+    unwrappedAmount = from777to20(amount);
+    balance[from] = balance[from].sub(unwrappedAmount);
+    _burn(address(this), amount, "", "");
+
+    TransferHelper.safeTransfer(address(token), recipient, unwrappedAmount);
   }
 
   receive() external payable {
