@@ -58,5 +58,5 @@ module.exports = {
   str,
   getDefiAddresses,
   getWrappedToken,
-  eth: num => _web3.utils.toWei(num, 'ether'),
+  eth: num => _web3.utils.toWei(num.toString(), 'ether'),
 };

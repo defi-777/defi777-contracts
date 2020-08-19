@@ -2,32 +2,34 @@ pragma solidity >=0.6.5 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
+import "./Wrapped777.sol";
 
-contract FarmerToken {
+contract FarmerToken is Wrapped777 {
   using SafeMath for uint256;
   using SignedSafeMath for int256;
 
-  uint totalSupply = 0;
-  mapping(address => uint) public balance;
-
-  uint scaledRewardPerToken = 0;
-
   uint256 public constant SCALE = uint256(10) ** 8;
+  uint256 private scaledRewardPerToken = 0;
   uint256 public scaledRemainder = 0;
 
   mapping(address => int) public rewardOffset;
 
-  function mint(uint tokens) public {
-    totalSupply = totalSupply.add(tokens);
-    balance[msg.sender] = balance[msg.sender].add(tokens);
-    rewardOffset[msg.sender] = rewardOffset[msg.sender].add(int256(tokens.mul(scaledRewardPerToken)));
+  function _mint(
+    address account,
+    uint256 amount,
+    bytes memory userData,
+    bytes memory operatorData
+  ) internal override {
+    ERC777WithGranularity._mint(account, amount, userData, operatorData);
+    rewardOffset[account] = rewardOffset[account].add(int256(amount.mul(scaledRewardPerToken)));
   }
 
   function harvest(uint reward) public {
     uint256 scaledReward = reward.mul(SCALE).add(scaledRemainder);
 
-    scaledRewardPerToken = scaledRewardPerToken.add(scaledReward.div(totalSupply));
-    scaledRemainder = scaledReward.mod(totalSupply);
+    uint256 supply = totalSupply();
+    scaledRewardPerToken = scaledRewardPerToken.add(scaledReward.div(supply));
+    scaledRemainder = scaledReward.mod(supply);
   }
 
   function rewardBalance(address user) public view returns (uint256) {
@@ -35,17 +37,23 @@ contract FarmerToken {
   }
 
   function scaledRewardBalance(address user) private view returns (uint256) {
-    return uint256(int256(scaledRewardPerToken.mul(balance[user])).sub(rewardOffset[user]));
+    return uint256(int256(scaledRewardPerToken.mul(balanceOf(user))).sub(rewardOffset[user]));
   }
 
-  function transfer(address to, uint amount) public {
-    int256 scaledRewardToTransfer = int256(scaledRewardBalance(msg.sender).mul(amount).div(balance[msg.sender]));
+  function _move(
+    address operator,
+    address from,
+    address to,
+    uint256 amount,
+    bytes memory userData,
+    bytes memory operatorData
+  ) internal override {
+    int256 scaledRewardToTransfer = int256(scaledRewardBalance(from).mul(amount).div(balanceOf(from)));
     int256 offset = scaledRewardToTransfer.sub(int256(amount.mul(scaledRewardPerToken)));
 
-    balance[msg.sender] = balance[msg.sender].sub(amount);
-    balance[to] = balance[to].add(amount);
+    ERC777WithGranularity._move(operator, from, to, amount, userData, operatorData);
 
-    rewardOffset[msg.sender] = rewardOffset[msg.sender].add(offset);
+    rewardOffset[from] = rewardOffset[from].add(offset);
     rewardOffset[to] = rewardOffset[to].sub(offset);
   }
 
@@ -56,15 +64,17 @@ contract FarmerToken {
     rewardOffset[msg.sender] = rewardOffset[msg.sender].add(int256(scaledAmount));
   }
 
-  function burn(uint tokens) public {
-    require(tokens <= balance[msg.sender]);
+  function _burn(
+    address from,
+    uint256 amount,
+    bytes memory data,
+    bytes memory operatorData
+  ) internal override {
+    uint rewardToRedistribute = rewardBalance(from).mul(amount).div(balanceOf(from));
 
-    balance[msg.sender] -= tokens;
-    totalSupply -= tokens;
+    ERC777WithGranularity._burn(from, amount, data, operatorData);
 
-    rewardOffset[msg.sender] -= int256(tokens * scaledRewardPerToken);
-
-    uint rewardToRedistribute = rewardBalance(msg.sender) * tokens / balance[msg.sender];
-    scaledRewardPerToken += rewardToRedistribute / totalSupply;
+    rewardOffset[from] = rewardOffset[from].sub(int256(amount.mul(scaledRewardPerToken)));
+    scaledRewardPerToken = scaledRewardPerToken.add(rewardToRedistribute.div(totalSupply()));
   }
 }

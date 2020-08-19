@@ -1,32 +1,37 @@
-const { getContract, web3, group, getAccounts, str, getDefiAddresses } = require('./test-lib');
+const { getContract, web3, group, getAccounts, str, getDefiAddresses, eth } = require('./test-lib');
 const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const FarmerToken = getContract('FarmerToken');
+const FarmerTokenFactory = getContract('FarmerTokenFactory');
 const TestERC20 = getContract('TestERC20');
-
-const { toWei, toBN } = web3.utils;
-const eth = num => toWei(num, 'ether');
-
-const ONE_GWEI = 1000000000;
 
 group('Farmer Token', (accounts) => {
   const [user1, user2, user3, pool] = getAccounts(accounts);
-
 
   before(async () => {
     await singletons.ERC1820Registry(user1);
   });
 
-  it('should allocate tokens correctly', async () => {
-    const farmerToken = await FarmerToken.new();
+  it('should allocate tokens correctly', async function() {
+    this.timeout(10000);
 
-    await farmerToken.mint(eth('2'), { from: user1 });
+    const factory = await FarmerTokenFactory.new();
+    const token = await TestERC20.new();
+
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
+    const farmerToken = await FarmerToken.at(wrapperAddress);
+
+    await token.approve(wrapperAddress, eth(10));
+    await farmerToken.wrap(eth(2), { from: user1 });
 
     await farmerToken.harvest(eth('2'));
     expect(await str(farmerToken.rewardBalance(user1))).to.equal(eth('2'));
 
-    await farmerToken.mint(eth('6'), { from: user2 });
+    await token.transfer(user2, eth(6), { from: user1 });
+    await token.approve(wrapperAddress, eth(6), { from: user2 });
+    await farmerToken.wrap(eth(6), { from: user2 });
 
     await farmerToken.harvest(eth('8'));
     expect(await str(farmerToken.rewardBalance(user1))).to.equal(eth('4'));

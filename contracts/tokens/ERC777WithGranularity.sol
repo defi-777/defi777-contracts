@@ -397,7 +397,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         bytes memory userData,
         bytes memory operatorData
     )
-        private
+        internal virtual
     {
         require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
         _beforeTokenTransfer(operator, from, to, amount);
