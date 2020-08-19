@@ -2,7 +2,7 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./IWrapperFactory.sol";
+import "../tokens/IWrapperFactory.sol";
 import "./FarmerToken.sol";
 
 

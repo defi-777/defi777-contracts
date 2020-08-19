@@ -2,7 +2,7 @@ pragma solidity >=0.6.5 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
-import "./Wrapped777.sol";
+import "../tokens/Wrapped777.sol";
 
 contract FarmerToken is Wrapped777 {
   using SafeMath for uint256;
