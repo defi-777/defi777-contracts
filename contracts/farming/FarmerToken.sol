@@ -4,9 +4,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../tokens/AddressBook.sol";
 import "../tokens/Wrapped777.sol";
+import "./IFarmerToken.sol";
+import "./IFarmerTokenFactory.sol";
+import "./IYieldAdapterFactory.sol";
 
-contract FarmerToken is Wrapped777 {
+contract FarmerToken is Wrapped777, IFarmerToken {
   using SafeMath for uint256;
   using SignedSafeMath for int256;
 
@@ -20,12 +24,14 @@ contract FarmerToken is Wrapped777 {
   mapping(address => mapping(address => int256)) public rewardOffset;
 
   address public owner;
+  IYieldAdapterFactory private adapterFactory;
 
   event RewardTokenAdded(address token);
   event RewardTokenRemoved(address token);
 
   constructor() public {
     owner = Ownable(msg.sender).owner();
+    adapterFactory = IYieldAdapterFactory(IFarmerTokenFactory(msg.sender).adapterFactory());
   }
 
   function transferOwnership(address newOwner) external onlyOwner {
@@ -34,7 +40,7 @@ contract FarmerToken is Wrapped777 {
   }
 
   modifier onlyOwner() {
-    require(owner == msg.sender, "Not owner");
+    require(owner == msg.sender);
     _;
   }
 
@@ -47,6 +53,12 @@ contract FarmerToken is Wrapped777 {
 
     rewardTokens.push(newToken);
     emit RewardTokenAdded(newToken);
+
+    createYieldAdapter(newToken);
+  }
+
+  function getWrapper(address token) external override returns (address) {
+    return AddressBook(adapterFactory.wrapperFactory()).getWrapperAddress(token);
   }
 
   function removeRewardToken(address token) external onlyOwner {
@@ -60,7 +72,11 @@ contract FarmerToken is Wrapped777 {
         return;
       }
     }
-    revert("Token not found");
+    revert();
+  }
+
+  function createYieldAdapter(address yieldToken) private {
+    adapterFactory.getWrapperAddress(address(this), yieldToken);
   }
 
   function _mint(
@@ -90,7 +106,7 @@ contract FarmerToken is Wrapped777 {
     scaledRemainder[token] = scaledReward.mod(supply);
   }
 
-  function rewardBalance(address token, address user) public view returns (uint256) {
+  function rewardBalance(address token, address user) external view override returns (uint256) {
     return scaledRewardBalance(token, user).div(SCALE);
   }
 
@@ -121,15 +137,24 @@ contract FarmerToken is Wrapped777 {
     ERC777WithGranularity._move(operator, from, to, amount, userData, operatorData);
   }
 
-  function withdraw(address token, uint amount) public {
-    require(amount <= rewardBalance(token, msg.sender), "Insuficent reward balance");
+  function withdraw(address token, uint amount) external {
+    _withdraw(token, msg.sender, msg.sender, amount);
+  }
 
+  function withdrawFrom(address token, address from, uint256 amount) external override {
+    require(msg.sender == adapterFactory.calculateWrapperAddress(address(this), token));
+    _withdraw(token, from, msg.sender, amount);
+  }
+
+  function _withdraw(address token, address from, address to, uint amount) private {
     uint256 scaledAmount = amount.mul(SCALE);
-    rewardOffset[token][msg.sender] = rewardOffset[token][msg.sender].add(int256(scaledAmount));
+    require(scaledAmount <= scaledRewardBalance(token, from), "Insuficent reward balance");
+
+    rewardOffset[token][from] = rewardOffset[token][from].add(int256(scaledAmount));
 
     totalRewardBalance[token] = totalRewardBalance[token].sub(amount);
 
-    IERC20(token).transfer(msg.sender, amount);
+    IERC20(token).transfer(to, amount);
   }
 
   function _burn(

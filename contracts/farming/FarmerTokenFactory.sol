@@ -3,18 +3,23 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "../tokens/IWrapperFactory.sol";
 import "./FarmerToken.sol";
+import "./IFarmerTokenFactory.sol";
 
 
-contract FarmerTokenFactory is IWrapperFactory, Ownable {
+contract FarmerTokenFactory is Ownable, IFarmerTokenFactory {
   using Address for address;
 
   address private _nextToken;
+  address private immutable _adapterFactory;
 
   bytes32 public constant WRAPPER_BYTECODE_HASH = keccak256(type(FarmerToken).creationCode);
 
   event WrapperCreated(address token);
+
+  constructor(address __adapterFactory) public {
+    _adapterFactory = __adapterFactory;
+  }
 
   function calculateWrapperAddress(address token) public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
@@ -44,5 +49,9 @@ contract FarmerTokenFactory is IWrapperFactory, Ownable {
 
   function nextToken() external override view returns (address) {
     return _nextToken;
+  }
+
+  function adapterFactory() external override view returns (address) {
+    return _adapterFactory;
   }
 }
