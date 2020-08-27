@@ -2,8 +2,8 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./Balancer777.sol";
-import "./BFactory.sol";
-import "./BPool.sol";
+import "./interfaces/BFactory.sol";
+import "./interfaces/BPool.sol";
 
 
 contract BalancerHub {

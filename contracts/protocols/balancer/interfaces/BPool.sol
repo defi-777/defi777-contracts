@@ -12,4 +12,10 @@ interface BPool {
   ) external returns (uint tokenAmountOut, uint spotPriceAfter);
 
   function getSpotPrice(address tokenIn, address tokenOut) external view returns (uint spotPrice);
+
+  function joinswapExternAmountIn(
+    address tokenIn,
+    uint tokenAmountIn,
+    uint minPoolAmountOut
+  ) external returns (uint poolAmountOut);
 }
