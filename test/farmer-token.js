@@ -27,6 +27,7 @@ group('Farmer Token', (accounts) => {
     const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     await farmerToken.addRewardToken(reward1.address);
+    expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
 
     await token.transfer(user1, eth(2), { from: admin });
     await token.approve(wrapperAddress, eth(10), { from: user1 });

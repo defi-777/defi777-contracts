@@ -16,7 +16,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
 
   uint256 public constant SCALE = uint256(10) ** 8;
 
-  address[] public rewardTokens;
+  address[] private _rewardTokens;
   mapping(address => uint256) private scaledRewardPerToken;
   mapping(address => uint256) public scaledRemainder;
   mapping(address => uint256) public totalRewardBalance;
@@ -44,14 +44,18 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     _;
   }
 
+  function rewardTokens() external view returns (address[] memory) {
+    return _rewardTokens;
+  }
+
   function addRewardToken(address newToken) external onlyOwner {
-    for (uint8 i = 0; i < rewardTokens.length; i++) {
-      if (rewardTokens[i] == newToken) {
+    for (uint8 i = 0; i < _rewardTokens.length; i++) {
+      if (_rewardTokens[i] == newToken) {
         revert("Token already added");
       }
     }
 
-    rewardTokens.push(newToken);
+    _rewardTokens.push(newToken);
     emit RewardTokenAdded(newToken);
 
     createYieldAdapter(newToken);
@@ -62,12 +66,12 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   }
 
   function removeRewardToken(address token) external onlyOwner {
-    for (uint8 i = 0; i < rewardTokens.length; i++) {
-      if (rewardTokens[i] == token) {
-        if (i + 1 < rewardTokens.length) {
-          rewardTokens[i] = rewardTokens[rewardTokens.length];
+    for (uint8 i = 0; i < _rewardTokens.length; i++) {
+      if (_rewardTokens[i] == token) {
+        if (i + 1 < _rewardTokens.length) {
+          _rewardTokens[i] = _rewardTokens[_rewardTokens.length];
         }
-        delete rewardTokens[i];
+        delete _rewardTokens[i];
         emit RewardTokenRemoved(token);
         return;
       }
@@ -87,8 +91,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   ) internal override {
     ERC777WithGranularity._mint(account, amount, userData, operatorData);
 
-    for (uint i = 0; i < rewardTokens.length; i++) {
-      address token = rewardTokens[i];
+    for (uint i = 0; i < _rewardTokens.length; i++) {
+      address token = _rewardTokens[i];
       int256 baseOffset = int256(amount.mul(scaledRewardPerToken[token]));
       rewardOffset[token][account] = rewardOffset[token][account].add(baseOffset);
     }
@@ -124,8 +128,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   ) internal override {
     uint256 startBalance = balanceOf(from);
 
-    for (uint i = 0; i < rewardTokens.length; i++) {
-      address token = rewardTokens[i];
+    for (uint i = 0; i < _rewardTokens.length; i++) {
+      address token = _rewardTokens[i];
 
       int256 scaledRewardToTransfer = int256(scaledRewardBalance(token, from).mul(amount).div(startBalance));
       int256 offset = scaledRewardToTransfer.sub(int256(amount.mul(scaledRewardPerToken[token])));
@@ -166,8 +170,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     uint256 startingBalance = balanceOf(from);
     uint256 newSupply = totalSupply() - amount;
 
-    for (uint i = 0; i < rewardTokens.length; i++) {
-      address token = rewardTokens[i];
+    for (uint i = 0; i < _rewardTokens.length; i++) {
+      address token = _rewardTokens[i];
 
       uint rewardToRedistribute = scaledRewardBalance(token, from).mul(amount).div(startingBalance);
 
