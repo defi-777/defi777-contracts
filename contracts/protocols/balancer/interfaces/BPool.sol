@@ -18,4 +18,10 @@ interface BPool {
     uint tokenAmountIn,
     uint minPoolAmountOut
   ) external returns (uint poolAmountOut);
+
+  function exitswapPoolAmountIn(
+    address tokenOut,
+    uint poolAmountIn,
+    uint minAmountOut
+  ) external returns (uint tokenAmountOut);
 }

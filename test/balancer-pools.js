@@ -4,11 +4,14 @@ const { expect } = require('chai');
 
 const BalancerPool = getContract('BalancerPool');
 const BalancerPoolFactory = getContract('BalancerPoolFactory');
+const BalancerPoolExitFactory = getContract('BalancerPoolExitFactory');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 const TestBPool = getContract('TestBPool');
 const IERC20 = getContract('IERC20');
 
+const ONE_GWEI = 1000000000;
+const { toBN } = web3.utils;
 
 group('Balancer Pools', (accounts) => {
   const [defaultSender, user] = getAccounts(accounts);
@@ -22,7 +25,7 @@ group('Balancer Pools', (accounts) => {
     ({ weth, dai } = await getDefiAddresses());
   });
 
-  it('should join a balancer pool with ETH', async () => {
+  it('should join and exit a balancer pool with ETH', async () => {
     const wrapperFactory = await WrapperFactory.new();
     const poolFactory = await BalancerPoolFactory.new(weth);
 
@@ -38,6 +41,19 @@ group('Balancer Pools', (accounts) => {
     await poolAdapter.sendTransaction({ value: eth(1), from: user });
 
     expect(await str(poolWrapper.balanceOf(user))).to.equal(eth(1));
+
+    // Exit
+    const exitFactory = await BalancerPoolExitFactory.new(weth);
+
+    await exitFactory.createWrapper('0x0000000000000000000000000000000000000000');
+    const exitAdapter = await exitFactory.calculateWrapperAddress('0x0000000000000000000000000000000000000000');
+
+    const startingBalance = await web3.eth.getBalance(user);
+    const { receipt } = await poolWrapper.transfer(exitAdapter, eth(1), { gasPrice: ONE_GWEI, from: user });
+
+    const ethSpentOnGas = ONE_GWEI * receipt.gasUsed;
+    expect(await web3.eth.getBalance(user))
+      .to.equal((toBN(startingBalance).add(toBN(eth(1))).sub(toBN(ethSpentOnGas))).toString());
   });
 
   it('should join a balancer pool with Dai777', async () => {
@@ -62,5 +78,14 @@ group('Balancer Pools', (accounts) => {
     await daiWrapper.transfer(poolAdapterAddress, eth(1), { from: user });
 
     expect(await str(poolWrapper.balanceOf(user))).to.equal(eth(1));
+
+    // Exit
+    const exitFactory = await BalancerPoolExitFactory.new(weth);
+
+    await exitFactory.createWrapper(daiWrapperAddress);
+    const exitAdapter = await exitFactory.calculateWrapperAddress(daiWrapperAddress);
+
+    await poolWrapper.transfer(exitAdapter, eth(1), { from: user });
+    expect(await str(daiWrapper.balanceOf(user))).to.equal(eth(1));
   });
 });

@@ -46,4 +46,15 @@ contract TestBPool is BPool, ERC20 {
     _mint(msg.sender, tokenAmountIn);
     poolAmountOut = tokenAmountIn;
   }
+
+  function exitswapPoolAmountIn(
+    address tokenOut,
+    uint poolAmountIn,
+    uint /*minAmountOut*/
+  ) external override returns (uint tokenAmountOut) {
+    require(hasToken[tokenOut]);
+    _burn(msg.sender, poolAmountIn);
+    ERC20(tokenOut).transfer(msg.sender, poolAmountIn);
+    tokenAmountOut = poolAmountIn;
+  }
 }
