@@ -24,7 +24,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   mapping(address => mapping(address => int256)) public rewardOffset;
 
   address public owner;
-  IYieldAdapterFactory private adapterFactory;
+  IYieldAdapterFactory private immutable adapterFactory;
 
   event RewardTokenAdded(address token);
   event RewardTokenRemoved(address token);
@@ -175,8 +175,12 @@ contract FarmerToken is Wrapped777, IFarmerToken {
 
       uint rewardToRedistribute = scaledRewardBalance(token, from).mul(amount).div(startingBalance);
 
-      rewardOffset[token][from] = rewardOffset[token][from].sub(int256(amount.mul(scaledRewardPerToken[token])));
-      scaledRewardPerToken[token] = scaledRewardPerToken[token].add(rewardToRedistribute.div(newSupply));
+      if (newSupply > 0) {
+        scaledRewardPerToken[token] = scaledRewardPerToken[token].add(rewardToRedistribute.div(newSupply));
+      } else {
+        scaledRewardPerToken[token] = 0;
+        totalRewardBalance[token] = 0;
+      }
     }
 
     ERC777WithGranularity._burn(from, amount, data, operatorData);

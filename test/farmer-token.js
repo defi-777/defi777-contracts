@@ -112,4 +112,116 @@ group('Farmer Token', (accounts) => {
     await reward1Adapter.transfer(user2, eth(2), { from: user1 });
     expect(await str(reward1Wrapper.balanceOf(user2))).to.equal(eth(2));
   });
+
+  it('should let a farmer token be unwrapped down to 0', async () => {
+    const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
+    const factory = await FarmerTokenFactory.new(adapterFactory.address);
+    const token = await TestERC20.new();
+    const reward1 = await TestERC20.new();
+
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
+    const farmerToken = await FarmerToken.at(wrapperAddress);
+    await farmerToken.addRewardToken(reward1.address);
+    expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
+
+    await token.transfer(user1, eth(2), { from: admin });
+    await token.approve(wrapperAddress, eth(10), { from: user1 });
+    await farmerToken.wrap(eth(2), { from: user1 });
+
+    await reward1.transfer(farmerToken.address, eth(2));
+    await farmerToken.harvest(reward1.address);
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(2));
+
+    await farmerToken.unwrap(eth(1), { from: user1 });
+    expect(await str(farmerToken.balanceOf(user1))).to.equal(eth(1));
+    expect(await str(token.balanceOf(user1))).to.equal(eth(1));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(2));
+
+    await farmerToken.unwrap(eth(1), { from: user1 });
+    expect(await str(farmerToken.balanceOf(user1))).to.equal('0');
+    expect(await str(token.balanceOf(user1))).to.equal(eth(2));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal('0');
+
+    await farmerToken.wrap(eth(2), { from: user1 });
+    await farmerToken.harvest(reward1.address);
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(2));
+  });
+
+  it('should let a farmer token be unwrapped with other users', async () => {
+    const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
+    const factory = await FarmerTokenFactory.new(adapterFactory.address);
+    const token = await TestERC20.new();
+    const reward1 = await TestERC20.new();
+
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
+    const farmerToken = await FarmerToken.at(wrapperAddress);
+    await farmerToken.addRewardToken(reward1.address);
+    expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
+
+    await token.transfer(user1, eth(3), { from: admin });
+    await token.approve(wrapperAddress, eth(10), { from: user1 });
+    await farmerToken.wrap(eth(3), { from: user1 });
+
+    await reward1.transfer(farmerToken.address, eth(3));
+    await farmerToken.harvest(reward1.address);
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(3));
+
+    await farmerToken.transfer(user2, eth(1), { from: user1 });
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(2));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth(1));
+
+    await farmerToken.unwrap(eth(1), { from: user1 });
+    expect(await str(farmerToken.balanceOf(user1))).to.equal(eth(1));
+    expect(await str(token.balanceOf(user1))).to.equal(eth(1));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(1.5));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth(1.5));
+
+    await farmerToken.unwrap(eth(1), { from: user1 });
+    expect(await str(farmerToken.balanceOf(user1))).to.equal('0');
+    expect(await str(token.balanceOf(user1))).to.equal(eth(2));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal('0');
+    expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth(3));
+
+    await farmerToken.wrap(eth(2), { from: user1 });
+    expect(await str(farmerToken.balanceOf(user1))).to.equal(eth(2));
+    expect(await str(farmerToken.balanceOf(user2))).to.equal(eth(1));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal('0');
+    expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth(3));
+
+    await reward1.transfer(farmerToken.address, eth(3));
+    await farmerToken.harvest(reward1.address);
+    expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth(2));
+    expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth(4));
+  });
+
+  it('should handle remainders well', async function () {
+    this.timeout(20000);
+
+    const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
+    const factory = await FarmerTokenFactory.new(adapterFactory.address);
+    const token = await TestERC20.new();
+    const reward1 = await TestERC20.new();
+
+    await factory.createWrapper(token.address);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address);
+    const farmerToken = await FarmerToken.at(wrapperAddress);
+    await farmerToken.addRewardToken(reward1.address);
+    expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
+
+    await token.transfer(user1, eth(10), { from: admin });
+    await token.approve(wrapperAddress, eth(10), { from: user1 });
+    await farmerToken.wrap(eth(7), { from: user1 });
+
+    for (let i = 0; i < 100; i++) {
+      await reward1.transfer(farmerToken.address, eth(0.1));
+      await farmerToken.harvest(reward1.address);
+    }
+
+    const finalBalance = await farmerToken.rewardBalance(reward1.address, user1);
+    const roundingError = web3.utils.toBN(eth(10)).sub(finalBalance).toNumber();
+
+    expect(roundingError).to.be.lessThan(100000000000);
+  });
 });
