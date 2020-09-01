@@ -243,7 +243,6 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity {
    * @param amount uint256 amount of tokens to transfer
    * @param userData bytes extra information provided by the token holder (if any)
    * @param operatorData bytes extra information provided by the operator (if any)
-   * @param requireReceptionAck if true, contract recipients are required to implement ERC777TokensRecipient
    */
   function _send(
     address from,
@@ -251,7 +250,7 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity {
     uint256 amount,
     bytes memory userData,
     bytes memory operatorData,
-    bool requireReceptionAck
+    bool /*requireReceptionAck*/
   ) internal {
     require(from != address(0), "ERC777: send from the zero address");
     require(to != address(0), "ERC777: send to the zero address");

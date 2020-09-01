@@ -32,6 +32,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   constructor() public {
     owner = Ownable(msg.sender).owner();
     adapterFactory = IYieldAdapterFactory(IFarmerTokenFactory(msg.sender).adapterFactory());
+
+    ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Farmer777"), address(this));
   }
 
   function transferOwnership(address newOwner) external onlyOwner {
@@ -44,7 +46,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     _;
   }
 
-  function rewardTokens() external view returns (address[] memory) {
+  function rewardTokens() external view override returns (address[] memory) {
     return _rewardTokens;
   }
 
@@ -58,7 +60,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     _rewardTokens.push(newToken);
     emit RewardTokenAdded(newToken);
 
-    createYieldAdapter(newToken);
+    createRewardAdapter(newToken);
   }
 
   function getWrapper(address token) external override returns (address) {
@@ -79,8 +81,12 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     revert();
   }
 
-  function createYieldAdapter(address yieldToken) private {
+  function createRewardAdapter(address yieldToken) private {
     adapterFactory.getWrapperAddress(address(this), yieldToken);
+  }
+
+  function getRewardAdapter(address yieldToken) external view override returns (address) {
+    return adapterFactory.calculateWrapperAddress(address(this), yieldToken);
   }
 
   function _mint(
