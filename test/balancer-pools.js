@@ -103,10 +103,9 @@ group('Balancer Pools', (accounts) => {
     await wrapperFactory.createWrapper(dai);
     const daiWrapper = await Wrapped777.at(await wrapperFactory.calculateWrapperAddress(dai));
 
-    await farmerFactory.createWrapper(bpool.address);
-    const poolWrapperAddress = await farmerFactory.calculateWrapperAddress(bpool.address);
+    await farmerFactory.createWrapper(bpool.address, [dai]);
+    const poolWrapperAddress = await farmerFactory.calculateWrapperAddress(bpool.address, [dai]);
     const poolWrapper = await FarmerToken.at(poolWrapperAddress);
-    await poolWrapper.addRewardToken(dai);
 
     await poolFactory.createWrapper(poolWrapperAddress);
     const poolAdapter = await BalancerPool.at(await poolFactory.calculateWrapperAddress(poolWrapperAddress));
@@ -128,8 +127,7 @@ group('Balancer Pools', (accounts) => {
     const exitAdapter = await exitFactory.calculateWrapperAddress('0x0000000000000000000000000000000000000000');
 
     const startingBalance = await web3.eth.getBalance(user);
-    const { receipt, logs } = await poolWrapper.transfer(exitAdapter, eth(1), { gasPrice: ONE_GWEI, from: user });
-    console.log(logs);
+    const { receipt } = await poolWrapper.transfer(exitAdapter, eth(1), { gasPrice: ONE_GWEI, from: user });
 
     expect(await str(daiWrapper.balanceOf(user))).to.equal(eth(1));
 

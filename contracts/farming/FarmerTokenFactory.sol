@@ -1,54 +1,65 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./FarmerToken.sol";
 import "./IFarmerTokenFactory.sol";
 
 
-contract FarmerTokenFactory is Ownable, IFarmerTokenFactory {
+contract FarmerTokenFactory is IFarmerTokenFactory {
   using Address for address;
 
   address private _nextToken;
+  address[] private _rewards;
   address private immutable _adapterFactory;
 
   bytes32 public constant WRAPPER_BYTECODE_HASH = keccak256(type(FarmerToken).creationCode);
 
-  event WrapperCreated(address token);
+  event WrapperCreated(address indexed token, address wrapper);
 
   constructor(address __adapterFactory) public {
     _adapterFactory = __adapterFactory;
   }
 
-  function calculateWrapperAddress(address token) public view returns (address calculatedAddress) {
+  function calculateWrapperAddress(address token, address[] memory rewards)
+    public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
       byte(0xff),
       address(this),
-      bytes32(uint(token)),
+      keccak256(abi.encodePacked(token, rewards)),
       WRAPPER_BYTECODE_HASH
     ))));
   }
 
-  function createWrapper(address token) public {
+  function createWrapper(address token, address[] memory rewards) public {
     _nextToken = token;
-    new FarmerToken{salt: bytes32(uint(token))}();
-    _nextToken = address(0);
+    _rewards = rewards;
 
-    emit WrapperCreated(token);
+    FarmerToken wrapper = new FarmerToken{salt: keccak256(abi.encodePacked(token, rewards))}();
+
+    _nextToken = address(0);
+    _rewards = new address[](0);
+
+    emit WrapperCreated(token, address(wrapper));
   }
 
-  function getWrapperAddress(address token) public returns (address wrapperAddress) {
-    wrapperAddress = calculateWrapperAddress(token);
+  function getWrapperAddress(address token, address[] memory rewards)
+    public returns (address wrapperAddress) {
+    wrapperAddress = calculateWrapperAddress(token, rewards);
 
     if(!wrapperAddress.isContract()) {
-      createWrapper(token);
+      createWrapper(token, rewards);
       assert(wrapperAddress.isContract());
     }
   }
 
   function nextToken() external override view returns (address) {
     return _nextToken;
+  }
+
+  function rewards() external override view returns (address[] memory) {
+    return _rewards;
   }
 
   function adapterFactory() external override view returns (address) {

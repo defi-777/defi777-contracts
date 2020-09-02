@@ -1,6 +1,6 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.5 <0.7.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,75 +14,36 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   using SafeMath for uint256;
   using SignedSafeMath for int256;
 
-  uint256 public constant SCALE = uint256(10) ** 8;
+  uint256 private constant SCALE = uint256(10) ** 8;
 
   address[] private _rewardTokens;
   mapping(address => uint256) private scaledRewardPerToken;
-  mapping(address => uint256) public scaledRemainder;
-  mapping(address => uint256) public totalRewardBalance;
+  mapping(address => uint256) private scaledRemainder;
+  mapping(address => uint256) private totalRewardBalance;
 
-  mapping(address => mapping(address => int256)) public rewardOffset;
+  mapping(address => mapping(address => int256)) private rewardOffset;
 
-  address public owner;
   IYieldAdapterFactory private immutable adapterFactory;
 
-  event RewardTokenAdded(address token);
-  event RewardTokenRemoved(address token);
-
   constructor() public {
-    owner = Ownable(msg.sender).owner();
-    adapterFactory = IYieldAdapterFactory(IFarmerTokenFactory(msg.sender).adapterFactory());
+    IYieldAdapterFactory _adapterFactory = IYieldAdapterFactory(IFarmerTokenFactory(msg.sender).adapterFactory());
+    adapterFactory = _adapterFactory;
+
+    address[] memory rewards = IFarmerTokenFactory(msg.sender).rewards();
+    _rewardTokens = rewards;
+    for (uint8 i = 0; i < rewards.length; i++) {
+      _adapterFactory.createWrapper(address(this), rewards[i]);
+    }
 
     ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Farmer777"), address(this));
-  }
-
-  function transferOwnership(address newOwner) external onlyOwner {
-    require(owner == msg.sender);
-    owner = newOwner;
-  }
-
-  modifier onlyOwner() {
-    require(owner == msg.sender);
-    _;
   }
 
   function rewardTokens() external view override returns (address[] memory) {
     return _rewardTokens;
   }
 
-  function addRewardToken(address newToken) external onlyOwner {
-    for (uint8 i = 0; i < _rewardTokens.length; i++) {
-      if (_rewardTokens[i] == newToken) {
-        revert("Token already added");
-      }
-    }
-
-    _rewardTokens.push(newToken);
-    emit RewardTokenAdded(newToken);
-
-    createRewardAdapter(newToken);
-  }
-
   function getWrapper(address token) external override returns (address) {
     return AddressBook(adapterFactory.wrapperFactory()).getWrapperAddress(token);
-  }
-
-  function removeRewardToken(address token) external onlyOwner {
-    for (uint8 i = 0; i < _rewardTokens.length; i++) {
-      if (_rewardTokens[i] == token) {
-        if (i + 1 < _rewardTokens.length) {
-          _rewardTokens[i] = _rewardTokens[_rewardTokens.length];
-        }
-        delete _rewardTokens[i];
-        emit RewardTokenRemoved(token);
-        return;
-      }
-    }
-    revert();
-  }
-
-  function createRewardAdapter(address yieldToken) private {
-    adapterFactory.getWrapperAddress(address(this), yieldToken);
   }
 
   function getRewardAdapter(address yieldToken) external view override returns (address) {
@@ -158,7 +119,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
 
   function _withdraw(address token, address from, address to, uint amount) private {
     uint256 scaledAmount = amount.mul(SCALE);
-    require(scaledAmount <= scaledRewardBalance(token, from), "Insuficent reward balance");
+    require(scaledAmount <= scaledRewardBalance(token, from)/*, "Insuficent reward"*/);
 
     rewardOffset[token][from] = rewardOffset[token][from].add(int256(scaledAmount));
 
@@ -179,9 +140,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     for (uint i = 0; i < _rewardTokens.length; i++) {
       address token = _rewardTokens[i];
 
-      uint rewardToRedistribute = scaledRewardBalance(token, from).mul(amount).div(startingBalance);
-
       if (newSupply > 0) {
+        uint rewardToRedistribute = scaledRewardBalance(token, from).mul(amount).div(startingBalance);
         scaledRewardPerToken[token] = scaledRewardPerToken[token].add(rewardToRedistribute.div(newSupply));
       } else {
         scaledRewardPerToken[token] = 0;

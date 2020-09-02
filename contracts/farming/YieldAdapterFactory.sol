@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -35,7 +36,11 @@ contract YieldAdapterFactory is Ownable, IYieldAdapterFactory {
     ))));
   }
 
-  function createWrapper(address farmerToken, address rewardToken) public {
+  function createWrapper(address farmerToken, address rewardToken) external override {
+    _createWrapper(farmerToken, rewardToken);
+  }
+
+  function _createWrapper(address farmerToken, address rewardToken) private {
     _nextToken = farmerToken;
     _nextReward = rewardToken;
     new YieldAdapter{salt: keccak256(abi.encodePacked(farmerToken, rewardToken))}();
@@ -49,7 +54,7 @@ contract YieldAdapterFactory is Ownable, IYieldAdapterFactory {
     wrapperAddress = _calculateWrapperAddress(farmerToken, rewardToken);
 
     if(!wrapperAddress.isContract()) {
-      createWrapper(farmerToken, rewardToken);
+      _createWrapper(farmerToken, rewardToken);
       assert(wrapperAddress.isContract());
     }
   }
