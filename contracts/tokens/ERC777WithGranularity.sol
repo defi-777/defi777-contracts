@@ -138,8 +138,6 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
      * Also emits a {Sent} event.
      */
     function transfer(address recipient, uint256 amount) public override returns (bool) {
-        require(recipient != address(0), "ERC777: transfer to the zero address");
-
         address from = _msgSender();
 
         _callTokensToSend(from, from, recipient, amount, "", "");
@@ -176,7 +174,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
      * @dev See {IERC777-authorizeOperator}.
      */
     function authorizeOperator(address operator) public override  {
-        require(_msgSender() != operator, "ERC777: authorizing self as operator");
+        require(_msgSender() != operator, "SELF-OPER");
 
         if (_defaultOperators[operator]) {
             delete _revokedDefaultOperators[_msgSender()][operator];
@@ -191,7 +189,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
      * @dev See {IERC777-revokeOperator}.
      */
     function revokeOperator(address operator) public override  {
-        require(operator != _msgSender(), "ERC777: revoking self as operator");
+        require(operator != _msgSender(), "SELF-OPER");
 
         if (_defaultOperators[operator]) {
             _revokedDefaultOperators[_msgSender()][operator] = true;
@@ -223,7 +221,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     )
     public override
     {
-        require(isOperatorFor(_msgSender(), sender), "ERC777: caller is not an operator for holder");
+        require(isOperatorFor(_msgSender(), sender), "ERC777 NO-OPER");
         _send(sender, recipient, amount, data, operatorData, true);
     }
 
@@ -233,7 +231,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
      * Emits {Burned} and {IERC20-Transfer} events.
      */
     function operatorBurn(address account, uint256 amount, bytes memory data, bytes memory operatorData) public override {
-        require(isOperatorFor(_msgSender(), account), "ERC777: caller is not an operator for holder");
+        require(isOperatorFor(_msgSender(), account), "ERC777 NO-OPER");
         _burn(account, amount, data, operatorData);
     }
 
@@ -269,15 +267,12 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
     */
     function transferFrom(address holder, address recipient, uint256 amount) public override returns (bool) {
-        require(recipient != address(0), "ERC777: transfer to the zero address");
-        require(holder != address(0), "ERC777: transfer from the zero address");
-
         address spender = _msgSender();
 
         _callTokensToSend(spender, holder, recipient, amount, "", "");
 
         _move(spender, holder, recipient, amount, "", "");
-        _approve(holder, spender, _allowances[holder][spender].sub(amount, "ERC777: transfer amount exceeds allowance"));
+        _approve(holder, spender, _allowances[holder][spender].sub(amount, "ERC777: OVER-ALLOW"));
 
         _callTokensReceived(spender, holder, recipient, amount, "", "", false);
 
@@ -309,8 +304,8 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     )
     internal virtual
     {
-        require(account != address(0), "ERC777: mint to the zero address");
-        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
+        require(account != address(0), "ERC777: MINT-ZERO");
+        require(amount % getGranularity() == 0, "ERC777: BAD-GRAN");
 
         address operator = _msgSender();
 
@@ -345,9 +340,6 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     )
         internal
     {
-        require(from != address(0), "ERC777: send from the zero address");
-        require(to != address(0), "ERC777: send to the zero address");
-
         address operator = _msgSender();
 
         _callTokensToSend(operator, from, to, amount, userData, operatorData);
@@ -372,8 +364,8 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     )
         internal virtual
     {
-        require(from != address(0), "ERC777: burn from the zero address");
-        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
+        require(from != address(0), "ERC777: BURN-ZERO");
+        require(amount % getGranularity() == 0, "ERC777: BAD-GRAN");
 
         address operator = _msgSender();
 
@@ -382,7 +374,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         _callTokensToSend(operator, from, address(0), amount, data, operatorData);
 
         // Update state variables
-        _balances[from] = _balances[from].sub(amount, "ERC777: burn amount exceeds balance");
+        _balances[from] = _balances[from].sub(amount, "ERC777: BURN-EXCESS");
         _totalSupply = _totalSupply.sub(amount);
 
         emit Burned(operator, from, amount, data, operatorData);
@@ -399,10 +391,12 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     )
         internal virtual
     {
-        require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
+        require(from != address(0), "ERC777: SEND-ZERO");
+        require(to != address(0), "ERC777: SEND-ZERO");
+        require(amount % getGranularity() == 0, "ERC777: BAD-GRAN");
         _beforeTokenTransfer(operator, from, to, amount);
 
-        _balances[from] = _balances[from].sub(amount, "ERC777: transfer amount exceeds balance");
+        _balances[from] = _balances[from].sub(amount, "ERC777: SEND-EXCESS");
         _balances[to] = _balances[to].add(amount);
 
         emit Sent(operator, from, to, amount, userData, operatorData);
@@ -413,7 +407,6 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         // TODO: restore this require statement if this function becomes internal, or is called at a new callsite. It is
         // currently unnecessary.
         //require(holder != address(0), "ERC777: approve from the zero address");
-        require(spender != address(0), "ERC777: approve to the zero address");
 
         _allowances[holder][spender] = value;
         emit Approval(holder, spender, value);
@@ -470,7 +463,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         if (implementer != address(0)) {
             IERC777Recipient(implementer).tokensReceived(operator, from, to, amount, userData, operatorData);
         } else if (requireReceptionAck) {
-            require(!to.isContract(), "ERC777: token recipient contract has no implementer for ERC777TokensRecipient");
+            require(!to.isContract(), "NOT ERC777TokensRecipient");
         }
     }
 

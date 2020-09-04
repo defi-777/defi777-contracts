@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -17,7 +18,6 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   string public constant WRAPPER_VERSION = "0.2.0";
 
   ERC20 public immutable override token;
-  address public immutable factory;
 
   ////////// For flashloans:
   event FlashLoan(address indexed target, uint256 amount);
@@ -33,7 +33,6 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
   constructor() public {
     address _token = IWrapperFactory(msg.sender).nextToken();
     token = ERC20(_token);
-    factory = msg.sender;
 
     _name = string(abi.encodePacked(SafeERC20Namer.tokenName(_token), "-777"));
     _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(_token), "777"));
@@ -130,14 +129,14 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     borrows[target] = borrows[target].add(amount);
     _mint(target, amount, data, '');
 
-    require(borrows[target] == 0, 'Flash loan not returned');
+    require(borrows[target] == 0, 'FLASH-FAIL');
 
     emit FlashLoan(target, amount);
   }
 
   function tryTokenUpgrade(address oldWrapper, address sender, uint256 amount) private {
     if (address(Wrapped777(oldWrapper).token()) != address(token)) {
-      revert("INVALID_TOKEN");
+      revert("INVALID");
     }
 
     uint256 startingBalance = token.balanceOf(address(this));
@@ -147,13 +146,13 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     uint256 endBalance = token.balanceOf(address(this));
 
     uint256 numUpgradedTokens = from20to777(endBalance.sub(startingBalance));
-    require(numUpgradedTokens > 0, "Upgrade: no tokens");
+    require(numUpgradedTokens > 0, "NO-UPGRADE");
 
     _mint(sender, numUpgradedTokens, "", "");
   }
 
   function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
-    require(deadline >= block.timestamp, 'Permit: EXPIRED');
+    require(deadline >= block.timestamp, 'EXPIRED');
     bytes32 digest = keccak256(
       abi.encodePacked(
         '\x19\x01',
@@ -162,7 +161,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
       )
     );
     address recoveredAddress = ecrecover(digest, v, r, s);
-    require(recoveredAddress != address(0) && recoveredAddress == owner, 'Permit: INVALID_SIGNATURE');
+    require(recoveredAddress != address(0) && recoveredAddress == owner, 'Permit INVALID_SIG');
     _approve(owner, spender, value);
   }
 
