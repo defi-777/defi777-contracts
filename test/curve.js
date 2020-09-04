@@ -3,6 +3,7 @@ const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const CurveAdapter = getContract('CurveAdapter');
+const CurveExitAdapter = getContract('CurveExitAdapter');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 const TestCurvePool = getContract('TestCurvePool');
@@ -39,5 +40,11 @@ group('Curve pools', (accounts) => {
     await token1Wrapper.transfer(adapter.address, eth(1), { from: user });
 
     expect(await str(curvePoolWrapper.balanceOf(user))).to.equal(eth(1));
+
+    // Exit
+    const exitAdapter = await CurveExitAdapter.new(token1WrapperAddress);
+
+    await curvePoolWrapper.transfer(exitAdapter.address, eth(1), { from: user });
+    expect(await str(token1Wrapper.balanceOf(user))).to.equal(eth(1));
   });
 });
