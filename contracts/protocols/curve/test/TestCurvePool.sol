@@ -42,13 +42,32 @@ contract TestCurvePool is ICurvePool, ERC20 {
   ) external override {
     revert('Unsupported');
   }
-  
-  function remove_liquidity_one_coin(
-    uint256 _amount,
-    int128 i,
-    uint256 /*min_mint_amount*/
+
+  function remove_liquidity_imbalance(
+    uint256[3] calldata amounts,
+    uint256 /*max_burn_amount*/
   ) external override {
-    _burn(msg.sender, _amount);
-    ERC20(tokens[uint256(i)]).transfer(msg.sender, _amount);
+    uint burnAmt = 0;
+    for (uint i = 0; i < 3; i++) {
+      if (amounts[i] != 0) {
+        ERC20(tokens[uint256(i)]).transfer(msg.sender, amounts[uint256(i)]);
+        burnAmt += amounts[uint256(i)];
+      }
+    }
+    _burn(msg.sender, burnAmt);
+  }
+
+  function remove_liquidity_imbalance(
+    uint256[2] calldata /*amounts*/,
+    uint256 /*max_burn_amount*/
+  ) external override {
+    revert('Unsupported');
+  }
+
+  function remove_liquidity_imbalance(
+    uint256[4] calldata /*amounts*/,
+    uint256 /*max_burn_amount*/
+  ) external override {
+    revert('Unsupported');
   }
 }

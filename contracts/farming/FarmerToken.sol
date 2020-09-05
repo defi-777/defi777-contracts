@@ -26,10 +26,13 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   IYieldAdapterFactory private immutable adapterFactory;
 
   constructor() public {
-    IYieldAdapterFactory _adapterFactory = IYieldAdapterFactory(IFarmerTokenFactory(msg.sender).adapterFactory());
+    address yieldAdapterFactory;
+    address[] memory rewards;
+    (yieldAdapterFactory, rewards) = IFarmerTokenFactory(msg.sender).yieldAdapterFactoryAndRewards();
+
+    IYieldAdapterFactory _adapterFactory = IYieldAdapterFactory(yieldAdapterFactory);
     adapterFactory = _adapterFactory;
 
-    address[] memory rewards = IFarmerTokenFactory(msg.sender).rewards();
     _rewardTokens = rewards;
     for (uint8 i = 0; i < rewards.length; i++) {
       _adapterFactory.createWrapper(address(this), rewards[i]);
@@ -56,6 +59,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     bytes memory userData,
     bytes memory operatorData
   ) internal override {
+    preMint(amount);
+
     ERC777WithGranularity._mint(account, amount, userData, operatorData);
 
     for (uint i = 0; i < _rewardTokens.length; i++) {
@@ -134,6 +139,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     bytes memory data,
     bytes memory operatorData
   ) internal override {
+    preBurn(amount);
+
     uint256 startingBalance = balanceOf(from);
     uint256 newSupply = totalSupply() - amount;
 
@@ -151,4 +158,8 @@ contract FarmerToken is Wrapped777, IFarmerToken {
 
     ERC777WithGranularity._burn(from, amount, data, operatorData);
   }
+
+  function preMint(uint256 amount) internal virtual {}
+
+  function preBurn(uint256 amount) internal virtual {}
 }

@@ -58,11 +58,7 @@ contract FarmerTokenFactory is IFarmerTokenFactory {
     return _nextToken;
   }
 
-  function rewards() external override view returns (address[] memory) {
-    return _rewards;
-  }
-
-  function adapterFactory() external override view returns (address) {
-    return _adapterFactory;
+  function yieldAdapterFactoryAndRewards() external override view returns(address, address[] memory) {
+    return (_adapterFactory, _rewards);
   }
 }
