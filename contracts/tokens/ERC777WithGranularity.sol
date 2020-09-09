@@ -43,11 +43,11 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     address[] private _defaultOperatorsArray;
 
     // Immutable, but accounts may revoke them (tracked in __revokedDefaultOperators).
-    mapping(address => bool) private _defaultOperators;
+    // mapping(address => bool) private _defaultOperators;
 
     // For each account, a mapping of its operators and revoked default operators.
     mapping(address => mapping(address => bool)) private _operators;
-    mapping(address => mapping(address => bool)) private _revokedDefaultOperators;
+    // mapping(address => mapping(address => bool)) private _revokedDefaultOperators;
 
     // ERC20-allowances
     mapping (address => mapping (address => uint256)) private _allowances;
@@ -166,7 +166,7 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
         address tokenHolder
     ) public view override returns (bool) {
         return operator == tokenHolder ||
-            (_defaultOperators[operator] && !_revokedDefaultOperators[tokenHolder][operator]) ||
+            // (_defaultOperators[operator] && !_revokedDefaultOperators[tokenHolder][operator]) ||
             _operators[tokenHolder][operator];
     }
 
@@ -176,11 +176,11 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     function authorizeOperator(address operator) public override  {
         require(_msgSender() != operator, "SELF-OPER");
 
-        if (_defaultOperators[operator]) {
-            delete _revokedDefaultOperators[_msgSender()][operator];
-        } else {
+        // if (_defaultOperators[operator]) {
+        //     delete _revokedDefaultOperators[_msgSender()][operator];
+        // } else {
             _operators[_msgSender()][operator] = true;
-        }
+        // }
 
         emit AuthorizedOperator(operator, _msgSender());
     }
@@ -191,11 +191,11 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     function revokeOperator(address operator) public override  {
         require(operator != _msgSender(), "SELF-OPER");
 
-        if (_defaultOperators[operator]) {
-            _revokedDefaultOperators[_msgSender()][operator] = true;
-        } else {
+        // if (_defaultOperators[operator]) {
+        //     _revokedDefaultOperators[_msgSender()][operator] = true;
+        // } else {
             delete _operators[_msgSender()][operator];
-        }
+        // }
 
         emit RevokedOperator(operator, _msgSender());
     }
@@ -203,8 +203,8 @@ contract ERC777WithGranularity is Context, IERC777, IERC20, Granularity {
     /**
      * @dev See {IERC777-defaultOperators}.
      */
-    function defaultOperators() public view override returns (address[] memory) {
-        return _defaultOperatorsArray;
+    function defaultOperators() public view override returns (address[] memory operators) {
+        // return _defaultOperatorsArray;
     }
 
     /**
