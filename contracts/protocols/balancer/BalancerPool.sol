@@ -13,8 +13,6 @@ contract BalancerPool is Receiver {
   BPool public immutable pool;
   IWETH private immutable weth;
 
-  address private wrapping;
-
   uint256 private constant INFINITY = uint256(-1);
 
   constructor() public {

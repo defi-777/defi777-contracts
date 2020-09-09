@@ -34,11 +34,6 @@ contract BalancerPoolExit is Receiver {
     innerToken = _innerToken;
   }
 
-  receive() external payable {
-    // Only allow eth sent from WETH
-    require(msg.sender == address(innerToken));
-  }
-
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
     IWrapped777 inputWrapper = IWrapped777(address(_token));
     BPool pool = BPool(address(inputWrapper.token()));
