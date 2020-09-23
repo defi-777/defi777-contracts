@@ -34,7 +34,7 @@ contract UniswapWrapper is Receiver {
 
     uint256[] memory outputs = router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
 
-    wrapAndReturn(msg.sender, outputs[2]);
+    wrapAndReturn(msg.sender, outputs[1]);
   }
 
   /**
@@ -73,7 +73,7 @@ contract UniswapWrapper is Receiver {
 
       uint256[] memory outputs = router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
 
-      wrapAndReturn(from, outputs[path.length]);
+      wrapAndReturn(from, outputs[path.length - 1]);
     }
   }
 
