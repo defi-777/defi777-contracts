@@ -10,8 +10,7 @@ contract UniswapWrapper is Receiver {
   Wrapped777 public immutable wrapper;
   IUniswapV2Router01 public immutable router;
   IUniswapV2Factory public immutable uniswapFactory;
-
-  bool private wrapping = false;
+  address private immutable weth;
 
   uint256 private constant INFINITY = uint256(-1);
 
@@ -20,6 +19,7 @@ contract UniswapWrapper is Receiver {
     Wrapped777 _wrapper = Wrapped777(factory.nextToken());
     wrapper = _wrapper;
     IUniswapV2Router01 _router = IUniswapV2Router01(factory.uniswapRouter());
+    weth = _router.WETH();
     router = _router;
     uniswapFactory = _router.factory();
     infiniteApprove(_wrapper.token(), address(_wrapper), 1);
@@ -43,10 +43,6 @@ contract UniswapWrapper is Receiver {
     * If USDC777 is sent to this, it wall swap to Dai777
     */
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
-    if (address(_token) == address(wrapper) && wrapping) {
-      return;
-    }
-
     // Todo: support non-wrapped 777 tokens
     Wrapped777 inputWrapper = Wrapped777(address(_token));
     ERC20 unwrappedInput = inputWrapper.token();
@@ -58,7 +54,7 @@ contract UniswapWrapper is Receiver {
     if (address(_token) == address(wrapper)) {
       address[] memory path = new address[](2);
       path[0] = address(inputWrapper.token());
-      path[1] = router.WETH();
+      path[1] = weth;
 
       router.swapExactTokensForETH(unwrappedBalance, 0, path, from, now);
     } else {
@@ -67,7 +63,7 @@ contract UniswapWrapper is Receiver {
       if (uniswapFactory.getPair(address(unwrappedInput), address(outputToken)) == address(0)) {
         path = new address[](3);
         path[0] = address(unwrappedInput);
-        path[1] = router.WETH();
+        path[1] = weth;
         path[2] = address(outputToken);
       } else {
         path = new address[](2);
@@ -82,10 +78,8 @@ contract UniswapWrapper is Receiver {
   }
 
   function wrapAndReturn(address recipient, uint256 amount) private {
-    wrapping = true;
     infiniteApprove(wrapper.token(), address(wrapper), amount);
     wrapper.wrapTo(amount, recipient);
-    wrapping = false;
   }
 
   function infiniteApprove(ERC20 token, address spender, uint256 amount) private {
