@@ -28,7 +28,9 @@ group('Balancer Pools', (accounts) => {
     ({ weth, dai } = await getDefiAddresses());
   });
 
-  it('should join and exit a balancer pool with ETH', async () => {
+  it('should join and exit a balancer pool with ETH', async function() {
+    this.timeout(3000);
+
     const wrapperFactory = await WrapperFactory.new();
     const poolFactory = await BalancerPoolFactory.new(weth);
 
@@ -59,7 +61,9 @@ group('Balancer Pools', (accounts) => {
       .to.equal((toBN(startingBalance).add(toBN(eth(1))).sub(toBN(ethSpentOnGas))).toString());
   });
 
-  it('should join a balancer pool with Dai777', async () => {
+  it('should join a balancer pool with Dai777', async function() {
+    this.timeout(3000);
+
     const wrapperFactory = await WrapperFactory.new();
     const poolFactory = await BalancerPoolFactory.new(weth);
 
@@ -92,7 +96,9 @@ group('Balancer Pools', (accounts) => {
     expect(await str(daiWrapper.balanceOf(user))).to.equal(eth(1));
   });
 
-  it('should farm tokens when exiting a pool', async () => {
+  it('should farm tokens when exiting a pool', async function() {
+    this.timeout(3000);
+
     const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new(wrapperFactory.address);
     const farmerFactory = await FarmerTokenFactory.new(adapterFactory.address);
