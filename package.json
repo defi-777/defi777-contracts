@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "build": "truffle build",
-    "test": "mocha --exit --recursive"
+    "test": "mocha --exit --recursive",
+    "integration-test": "truffle exec ./integration-test/integration-test.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.0.0",
