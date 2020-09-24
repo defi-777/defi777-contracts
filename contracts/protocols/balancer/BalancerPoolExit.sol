@@ -3,6 +3,7 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../Receiver.sol";
+import "../../InfiniteApprove.sol";
 import "../../farming/IFarmerToken.sol";
 import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
@@ -11,7 +12,7 @@ import "./interfaces/IWETH.sol";
 import "./IBalancerPoolFactory.sol";
 
 
-contract BalancerPoolExit is Receiver {
+contract BalancerPoolExit is Receiver, InfiniteApprove {
   IWrapped777 public immutable token;
   ERC20 public immutable innerToken;
 
@@ -63,13 +64,10 @@ contract BalancerPoolExit is Receiver {
     address[] memory rewardTokens = _token.rewardTokens();
     for (uint i = 0; i < rewardTokens.length; i++) {
       ERC20 rewardAdapter = ERC20(_token.getRewardAdapter(rewardTokens[i]));
-      rewardAdapter.transfer(recipient, rewardAdapter.balanceOf(address(this)));
-    }
-  }
-
-  function infiniteApprove(ERC20 _token, address spender, uint256 amount) private {
-    if (_token.allowance(address(this), spender) < amount) {
-      _token.approve(spender, INFINITY);
+      uint256 rewardBalance = rewardAdapter.balanceOf(address(this));
+      if (rewardBalance > 0) {
+        rewardAdapter.transfer(recipient, rewardBalance);
+      }
     }
   }
 }

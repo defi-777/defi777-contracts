@@ -12,10 +12,11 @@ import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol";
 import "../tokens/Granularity.sol";
 import "../tokens/IWrapped777.sol";
+import "../InfiniteApprove.sol";
 import "./IFarmerToken.sol";
 import "./IYieldAdapterFactory.sol";
 
-contract YieldAdapter is Context, IERC777, IERC20, Granularity {
+contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove {
   using SafeMath for uint256;
   using Address for address;
 
@@ -275,7 +276,7 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity {
     farmer.withdrawFrom(token, from, adjustedAmount);
 
     IWrapped777 wrapper = IWrapped777(farmer.getWrapper(token));
-    IERC20(token).approve(address(wrapper), adjustedAmount);
+    infiniteApprove(ERC20(token), address(wrapper), adjustedAmount);
     wrapper.wrapTo(adjustedAmount, to);
 
     emit Sent(operator, from, to, amount, userData, operatorData);
