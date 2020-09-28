@@ -7,16 +7,14 @@ import "../../InfiniteApprove.sol";
 import "../../farming/IFarmerToken.sol";
 import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
+import "../../interfaces/IWETH.sol";
 import "./interfaces/BPool.sol";
-import "./interfaces/IWETH.sol";
 import "./IBalancerPoolFactory.sol";
 
 
 contract BalancerPoolExit is Receiver, InfiniteApprove {
   IWrapped777 public immutable token;
   ERC20 public immutable innerToken;
-
-  uint256 private constant INFINITY = uint256(-1);
 
   IERC1820Registry constant internal _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 

@@ -4,20 +4,22 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../IUniswapV2Router01.sol";
 import "../IUniswapV2Factory.sol";
 import "./TestUniswapFactory.sol";
+import "../../../test/WETH.sol";
 
 contract TestUniswapRouter is IUniswapV2Router01 {
 
-  address constant weth = 0x0000000000000000000000000000000000000001;
+  address immutable weth;
 
   IUniswapV2Factory _factory;
 
   constructor() public {
     _factory = IUniswapV2Factory(new TestUniswapFactory());
+    weth = address(new WETH());
   }
 
   receive() external payable {}
 
-  function WETH() external override pure returns (address) {
+  function WETH() external override view returns (address) {
     return weth;
   }
 

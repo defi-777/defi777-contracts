@@ -18,7 +18,7 @@ contract UniswapWrapper is Receiver {
     IUniswapWrapperFactory factory = IUniswapWrapperFactory(msg.sender);
     Wrapped777 _wrapper = Wrapped777(factory.nextToken());
     wrapper = _wrapper;
-    IUniswapV2Router01 _router = IUniswapV2Router01(factory.uniswapRouter());
+    IUniswapV2Router01 _router = factory.uniswapRouter();
     weth = _router.WETH();
     router = _router;
     uniswapFactory = _router.factory();

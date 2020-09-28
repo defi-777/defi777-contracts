@@ -2,6 +2,7 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
+import "./IUniswapV2Router01.sol";
 import "./IUniswapWrapperFactory.sol";
 import "./UniswapWrapper.sol";
 
@@ -45,8 +46,8 @@ contract UniswapWrapperFactory is Receiver, IUniswapWrapperFactory {
     }
   }
 
-  function uniswapRouter() external override view returns (address) {
-    return router;
+  function uniswapRouter() external override view returns (IUniswapV2Router01) {
+    return IUniswapV2Router01(router);
   }
 
   function nextToken() external override view returns (address) {
