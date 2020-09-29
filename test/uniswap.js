@@ -4,8 +4,8 @@ const { expect } = require('chai');
 
 const TestERC20 = getContract('TestERC20');
 const TestUniswapRouter = getContract('TestUniswapRouter');
-const UniswapWrapper = getContract('UniswapWrapper');
-const UniswapWrapperFactory = getContract('UniswapWrapperFactory');
+const UniswapAdapter = getContract('UniswapAdapter');
+const UniswapAdapterFactory = getContract('UniswapAdapterFactory');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 
@@ -29,10 +29,10 @@ group('Uniswap', (accounts) => {
     const uniswapRouter = await TestUniswapRouter.new();
     await token.transfer(uniswapRouter.address, toWei('100', 'ether'));
 
-    const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
-    await uniswapFactory.createExchange(wrapper.address);
-    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper.address);
-    const exchange = await UniswapWrapper.at(exchangeAddress);
+    const uniswapFactory = await UniswapAdapterFactory.new(uniswapRouter.address);
+    await uniswapFactory.createAdapter(wrapper.address);
+    const exchangeAddress = await uniswapFactory.calculateAdapterAddress(wrapper.address);
+    const exchange = await UniswapAdapter.at(exchangeAddress);
 
     await exchange.sendTransaction({ value: toWei('1', 'ether'), from: user });
     expect(await str(wrapper.balanceOf(user))).to.equal(toWei('1', 'ether'));
@@ -53,10 +53,10 @@ group('Uniswap', (accounts) => {
     const uniswapRouter = await TestUniswapRouter.new();
     await uniswapRouter.sendTransaction({ value: toWei('2', 'ether') });
 
-    const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
-    await uniswapFactory.createExchange(wrapper.address);
-    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper.address);
-    const exchange = await UniswapWrapper.at(exchangeAddress);
+    const uniswapFactory = await UniswapAdapterFactory.new(uniswapRouter.address);
+    await uniswapFactory.createAdapter(wrapper.address);
+    const exchangeAddress = await uniswapFactory.calculateAdapterAddress(wrapper.address);
+    const exchange = await UniswapAdapter.at(exchangeAddress);
 
     const startingBalance = await web3.eth.getBalance(user)
     const { receipt } = await wrapper.transfer(exchangeAddress, toWei('1', 'ether'), { from: user, gasPrice: ONE_GWEI });
@@ -86,10 +86,10 @@ group('Uniswap', (accounts) => {
     await wrapper2.wrap(toWei('10', 'ether'));
     await wrapper2.transfer(user, toWei('2', 'ether'));
 
-    const uniswapFactory = await UniswapWrapperFactory.new(uniswapRouter.address);
-    await uniswapFactory.createExchange(wrapper1.address);
-    const exchangeAddress = await uniswapFactory.calculateExchangeAddress(wrapper1.address);
-    const exchange = await UniswapWrapper.at(exchangeAddress);
+    const uniswapFactory = await UniswapAdapterFactory.new(uniswapRouter.address);
+    await uniswapFactory.createAdapter(wrapper1.address);
+    const exchangeAddress = await uniswapFactory.calculateAdapterAddress(wrapper1.address);
+    const exchange = await UniswapAdapter.at(exchangeAddress);
 
     await wrapper2.transfer(exchangeAddress, toWei('1', 'ether'), { from: user });
     expect(await str(wrapper1.balanceOf(user))).to.equal(toWei('1', 'ether'));

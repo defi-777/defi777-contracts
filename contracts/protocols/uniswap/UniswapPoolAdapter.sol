@@ -6,9 +6,9 @@ import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
 import "../../InfiniteApprove.sol";
 import "../../interfaces/IWETH.sol";
-import "./IUniswapV2Pair.sol";
-import "./IUniswapV2Router01.sol";
-import "./IUniswapWrapperFactory.sol";
+import "./interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IUniswapV2Router01.sol";
+import "./IUniswapAdapterFactory.sol";
 
 
 contract UniswapPoolAdapter is Receiver, InfiniteApprove {
@@ -23,7 +23,7 @@ contract UniswapPoolAdapter is Receiver, InfiniteApprove {
   address private immutable weth;
 
   constructor() public {
-    IUniswapWrapperFactory factory = IUniswapWrapperFactory(msg.sender);
+    IUniswapAdapterFactory factory = IUniswapAdapterFactory(msg.sender);
     Wrapped777 _wrapper = Wrapped777(factory.nextToken());
     wrapper = _wrapper;
 

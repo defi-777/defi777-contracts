@@ -2,7 +2,7 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../../tokens/Wrapped777.sol";
-import "../uniswap/IUniswapV2Router01.sol";
+import "../uniswap/interfaces/IUniswapV2Router01.sol";
 import "../../Receiver.sol";
 
 contract UniswapPoolTogether is Receiver, Ownable {

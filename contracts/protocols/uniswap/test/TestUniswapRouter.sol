@@ -1,8 +1,8 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../IUniswapV2Router01.sol";
-import "../IUniswapV2Factory.sol";
+import "../interfaces/IUniswapV2Router01.sol";
+import "../interfaces/IUniswapV2Factory.sol";
 import "./TestUniswapFactory.sol";
 import "../../../test/WETH.sol";
 

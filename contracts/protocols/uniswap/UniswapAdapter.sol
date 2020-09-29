@@ -3,19 +3,18 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
-import "./IUniswapV2Router01.sol";
-import "./IUniswapWrapperFactory.sol";
+import "../../InfiniteApprove.sol";
+import "./interfaces/IUniswapV2Router01.sol";
+import "./IUniswapAdapterFactory.sol";
 
-contract UniswapWrapper is Receiver {
+contract UniswapAdapter is Receiver, InfiniteApprove {
   Wrapped777 public immutable wrapper;
   IUniswapV2Router01 public immutable router;
   IUniswapV2Factory public immutable uniswapFactory;
   address private immutable weth;
 
-  uint256 private constant INFINITY = uint256(-1);
-
   constructor() public {
-    IUniswapWrapperFactory factory = IUniswapWrapperFactory(msg.sender);
+    IUniswapAdapterFactory factory = IUniswapAdapterFactory(msg.sender);
     Wrapped777 _wrapper = Wrapped777(factory.nextToken());
     wrapper = _wrapper;
     IUniswapV2Router01 _router = factory.uniswapRouter();
@@ -80,11 +79,5 @@ contract UniswapWrapper is Receiver {
   function wrapAndReturn(address recipient, uint256 amount) private {
     infiniteApprove(wrapper.token(), address(wrapper), amount);
     wrapper.wrapTo(amount, recipient);
-  }
-
-  function infiniteApprove(ERC20 token, address spender, uint256 amount) private {
-    if (token.allowance(address(this), spender) < amount) {
-      token.approve(spender, INFINITY);
-    }
   }
 }

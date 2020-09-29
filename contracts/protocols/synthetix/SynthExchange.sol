@@ -2,7 +2,7 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../tokens/Wrapped777.sol";
-import "../uniswap/IUniswapV2Router01.sol";
+import "../uniswap/interfaces/IUniswapV2Router01.sol";
 import "./interfaces/ISynthetix.sol";
 import "../../Receiver.sol";
 import "./ISynthExchangeFactory.sol";

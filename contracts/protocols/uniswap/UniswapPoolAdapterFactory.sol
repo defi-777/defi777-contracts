@@ -2,11 +2,11 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
-import "./IUniswapV2Router01.sol";
-import "./IUniswapWrapperFactory.sol";
+import "./interfaces/IUniswapV2Router01.sol";
+import "./IUniswapAdapterFactory.sol";
 import "./UniswapPoolAdapter.sol";
 
-contract UniswapPoolAdapterFactory is Receiver, IUniswapWrapperFactory {
+contract UniswapPoolAdapterFactory is Receiver, IUniswapAdapterFactory {
   using Address for address;
 
   bytes32 public constant POOL_ADAPTER_BYTECODE_HASH = keccak256(type(UniswapPoolAdapter).creationCode);
