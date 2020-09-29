@@ -1,13 +1,19 @@
 pragma solidity >=0.6.2 <0.7.0;
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
 import "../../InfiniteApprove.sol";
+import "../../interfaces/IWETH.sol";
 import "./interfaces/IUniswapV2Router01.sol";
+import "./interfaces/IUniswapV2Pair.sol";
 import "./IUniswapAdapterFactory.sol";
 
 contract UniswapAdapter is Receiver, InfiniteApprove {
+  using SafeMath for uint256;
+
   Wrapped777 public immutable wrapper;
   IUniswapV2Router01 public immutable router;
   IUniswapV2Factory public immutable uniswapFactory;
@@ -25,15 +31,17 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
   }
 
   receive() external payable {
-    // uint (reserveA, reserveB) = getReserves(router.WETH(), address(wrapper.token()));
-    // uint output = getAmountOut(msg.value, reserveA, reserveB);
-    address[] memory path = new address[](2);
-    path[0] = router.WETH();
-    path[1] = address(wrapper.token());
+    if (msg.sender == weth) {
+      return;
+    }
 
-    uint256[] memory outputs = router.swapExactETHForTokens{value: msg.value}(0, path, address(this), now);
+    IWETH(weth).deposit{ value: msg.value }();
 
-    wrapAndReturn(msg.sender, outputs[1]);
+    ERC20 outputToken = wrapper.token();
+    uint256 outputAmount = executeSwap(weth, address(outputToken), msg.value, address(this));
+    require (outputAmount > 0, "NO_PAIR");
+
+    wrapAndReturn(msg.sender, outputAmount);
   }
 
   /**
@@ -48,33 +56,63 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
     ERC20 outputToken = wrapper.token();
 
     uint unwrappedBalance = inputWrapper.unwrap(amount);
-    infiniteApprove(unwrappedInput, address(router), unwrappedBalance);
 
     if (address(_token) == address(wrapper)) {
-      address[] memory path = new address[](2);
-      path[0] = address(inputWrapper.token());
-      path[1] = weth;
+      uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, address(this));
+      require(wethAmount > 0, "NO_PAIR");
 
-      router.swapExactTokensForETH(unwrappedBalance, 0, path, from, now);
+      IWETH(weth).withdraw(wethAmount);
+      TransferHelper.safeTransferETH(from, wethAmount);
     } else {
-      address[] memory path;
+      uint256 outputAmount = executeSwap(address(unwrappedInput), address(outputToken), unwrappedBalance, address(this));
 
-      if (uniswapFactory.getPair(address(unwrappedInput), address(outputToken)) == address(0)) {
-        path = new address[](3);
-        path[0] = address(unwrappedInput);
-        path[1] = weth;
-        path[2] = address(outputToken);
-      } else {
-        path = new address[](2);
-        path[0] = address(unwrappedInput);
-        path[1] = address(outputToken);
+      if (outputAmount == 0) {
+        address wethOutPair = uniswapFactory.getPair(weth, address(outputToken));
+        uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, wethOutPair);
+        outputAmount = executeSwap(weth, address(outputToken), wethAmount, 0, address(this));
       }
 
-      uint256[] memory outputs = router.swapExactTokensForTokens(unwrappedBalance, 0 /*amountOutMin*/, path, address(this), now);
+      require(outputAmount > 0, "NO_PAIR");
 
-      wrapAndReturn(from, outputs[path.length - 1]);
+      wrapAndReturn(from, outputAmount);
     }
   }
+
+  function executeSwap(address input, address out, uint256 swapAmount, address to) private returns (uint256 outputAmount) {
+    return executeSwap(input, out, swapAmount, swapAmount, to);
+  }
+
+  function executeSwap(address input, address out, uint256 swapAmount, uint256 transferAmount, address to) private returns (uint256 outputAmount) {
+    IUniswapV2Pair pair = IUniswapV2Pair(uniswapFactory.getPair(input, out));
+    if (address(pair) == address(0)) {
+      return 0;
+    }
+
+    if (transferAmount > 0) {
+      TransferHelper.safeTransfer(input, address(pair), transferAmount);
+    }
+
+    address token0 = address(pair.token0());
+
+    (uint256 reserve0, uint256 reserve1,) = pair.getReserves();
+    (uint256 reserveIn, uint256 reserveOut) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+
+    outputAmount = getAmountOut(swapAmount, reserveIn, reserveOut);
+    (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), outputAmount) : (outputAmount, uint(0));
+
+    pair.swap(amount0Out, amount1Out, to, new bytes(0)
+    );
+  }
+
+  function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
+    require(amountIn > 0);
+    require(reserveIn > 0 && reserveOut > 0);
+    uint amountInWithFee = amountIn.mul(997);
+    uint numerator = amountInWithFee.mul(reserveOut);
+    uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+    amountOut = numerator / denominator;
+  }
+
 
   function wrapAndReturn(address recipient, uint256 amount) private {
     infiniteApprove(wrapper.token(), address(wrapper), amount);
