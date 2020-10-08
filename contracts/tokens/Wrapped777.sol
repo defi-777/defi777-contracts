@@ -76,21 +76,24 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     return _wrap(sender, value);
   }
 
-  function _wrap(address sender, uint256 amount) private returns (uint256) {
+  function _wrap(address sender, uint256 amount) private returns (uint256 outputAmount) {
     TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
-    uint256 adjustedAmount = from20to777(amount);
-    _mint(sender, adjustedAmount, "", "");
-    return adjustedAmount;
+    outputAmount = from20to777(amount);
+    _mint(sender, outputAmount, "", "");
   }
 
-  function wrapTo(uint256 amount, address recipient) external override returns (uint256) {
+  function wrapTo(uint256 amount, address recipient) external override returns (uint256 outputAmount) {
     address sender = _msgSender();
     TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
-    uint256 adjustedAmount = from20to777(amount);
-    _mint(recipient, adjustedAmount, "", "");
-    return adjustedAmount;
+    outputAmount = from20to777(amount);
+    _mint(recipient, outputAmount, "", "");
+  }
+
+  function gulp(address recipient) external override returns (uint256 amount) {
+    amount = from20to777(token.balanceOf(address(this))).sub(ERC777WithGranularity.totalSupply());
+    _mint(recipient, amount, "", "");
   }
 
   function unwrap(uint256 amount) external override returns (uint256 unwrappedAmount) {

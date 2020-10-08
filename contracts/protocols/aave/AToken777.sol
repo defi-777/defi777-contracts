@@ -101,20 +101,21 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
     address sender = _msgSender();
     reserve.transferFrom(sender, address(this), amount);
 
-    update(sender);
-    balance[sender] = balance[sender].add(amount);
-
-    reserve.approve(address(lendingPool.core()), amount);
-    lendingPool.deposit(address(reserve), amount, referralCode);
-
-    outAmount = from20to777(amount);
-    _mint(sender, outAmount, "", "");
+    _wrap(amount, sender);
   }
 
   function wrapTo(uint256 amount, address recipient) external override returns (uint256 outAmount) {
     address sender = _msgSender();
     reserve.transferFrom(sender, address(this), amount);
 
+    _wrap(amount, recipient);
+  }
+
+  function gulp(address recipient) external override returns (uint256 outAmount) {
+    _wrap(reserve.balanceOf(address(this)), recipient);
+  }
+
+  function _wrap(uint256 amount, address recipient) private returns (uint256 outAmount) {
     update(recipient);
     balance[recipient] = balance[recipient].add(amount);
 

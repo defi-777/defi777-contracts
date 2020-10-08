@@ -8,6 +8,7 @@ interface IWrapped777 is IERC777 {
 
   function wrap(uint256 amount) external returns (uint256);
   function wrapTo(uint256 amount, address recipient) external returns (uint256);
+  function gulp(address recipient) external returns (uint256);
 
   function unwrap(uint256 amount) external returns (uint256 unwrappedAmount);
   function unwrapTo(uint256 amount, address recipient) external returns (uint256 unwrappedAmount);
