@@ -12,12 +12,12 @@ contract TestFlashLoanRecipient is Receiver {
     amount = _amount;
     token = address(_token);
 
-    _token.flashLoan(address(this), _amount, bytes('test'));
+    _token.flashMint(address(this), _amount, bytes('test'));
   }
 
   function runInvalidFlashLoan(Wrapped777 _token, uint256 _amount) external {
     token = 0x0000000000000000000000000000000000000000;
-    _token.flashLoan(address(this), _amount, bytes('test'));
+    _token.flashMint(address(this), _amount, bytes('test'));
   }
 
   function _tokensReceived(IERC777 _token, address /*from*/, uint256 _amount, bytes memory data) internal override {

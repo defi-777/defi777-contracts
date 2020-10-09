@@ -176,7 +176,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
    * @param amount Number of tokens to mint
    * @param data Arbitrary data to pass to the receive hook
    */
-  function flashLoan(address target, uint256 amount, bytes calldata data) external {
+  function flashMint(address target, uint256 amount, bytes calldata data) external {
     borrows[target] = borrows[target].add(amount);
     _mint(target, amount, data, '');
 
