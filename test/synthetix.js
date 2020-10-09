@@ -4,7 +4,6 @@ const { expect } = require('chai');
 
 const TestERC20 = getContract('TestERC20');
 const TestUniswapRouter = getContract('TestUniswapRouter');
-const UniswapWrapper = getContract('UniswapWrapper');
 const TestSynthetix = getContract('TestSynthetix');
 const SynthExchangeFactory = getContract('SynthExchangeFactory');
 const SynthExchange = getContract('SynthExchange');
