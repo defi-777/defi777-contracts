@@ -148,7 +148,7 @@ group('Wrapped777', (accounts) => {
     await token.approve(wrapperAddress, eth('10'));
     await wrapper.wrap(eth('10'));
 
-    await expectRevert(fakeToken.callReceiveHook(wrapperAddress), 'Upgrade: no tokens');
+    await expectRevert(fakeToken.callReceiveHook(wrapperAddress), 'NO-UPGRADE');
   });
 
   it('Should issue flash loans', async () => {
@@ -165,7 +165,7 @@ group('Wrapped777', (accounts) => {
 
     await expectRevert(
       tester.runInvalidFlashLoan(wrapper.address, toWei('10', 'ether')),
-      'Flash loan not returned',
+      'FLASH-FAIL',
     );
   });
 
