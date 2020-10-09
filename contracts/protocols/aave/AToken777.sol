@@ -6,14 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "../../Receiver.sol";
+import "../../GuardedReceiver.sol";
 import "../../tokens/IWrapped777.sol";
 import "./ERC777WithoutBalance.sol";
 import "./IAToken.sol";
 import "./ILendingPool.sol";
 import "./WadRayMath.sol";
 
-contract AToken777 is ERC777WithoutBalance, IWrapped777, Receiver {
+contract AToken777 is ERC777WithoutBalance, IWrapped777, GuardedReceiver {
   using WadRayMath for uint256;
   using SafeMath for uint256;
 
