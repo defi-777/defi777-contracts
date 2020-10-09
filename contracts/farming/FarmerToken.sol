@@ -41,6 +41,9 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Farmer777"), address(this));
   }
 
+  /**
+   * @return List of ERC20 token addresses handled by the contract
+   */
   function rewardTokens() external view override returns (address[] memory) {
     return _rewardTokens;
   }
@@ -70,6 +73,11 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     }
   }
 
+  /**
+   * @dev Read the balance of a reward token and credit all token holders' reward balance.
+   *
+   * @param token Address of an ERC20 reward token contract
+   */
   function harvest(address token) public {
     uint256 newTotal = IERC20(token).balanceOf(address(this));
     uint256 harvestedTokens = newTotal - totalRewardBalance[token];
@@ -82,6 +90,12 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     scaledRemainder[token] = scaledReward.mod(supply);
   }
 
+  /**
+   * @dev Unclaimed balance of a reward token, allocated to a token holder
+   *
+   * @param token Address of an ERC20 reward token contract
+   * @param user Token holder
+   */
   function rewardBalance(address token, address user) external view override returns (uint256) {
     return scaledRewardBalance(token, user).div(SCALE);
   }
@@ -113,10 +127,19 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     ERC777WithGranularity._move(operator, from, to, amount, userData, operatorData);
   }
 
+  /**
+   * @dev Withdraws reward tokens allocated to a token holder
+   *
+   * @param token Address of an ERC20 reward token contract
+   * @param amount Amount of tokens to withdraw
+   */
   function withdraw(address token, uint amount) external {
     _withdraw(token, msg.sender, msg.sender, amount);
   }
 
+  /**
+   * @dev Allows a yieldAdapter to withdraw tokens on a user's behalf
+   */
   function withdrawFrom(address token, address from, uint256 amount) external override {
     require(msg.sender == adapterFactory.calculateWrapperAddress(address(this), token));
     _withdraw(token, from, msg.sender, amount);

@@ -60,11 +60,23 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     return ERC777WithGranularity.balanceOf(tokenHolder);
   }
 
+  /**
+   * @dev Wraps ERC-20 tokens from the caller and sends wrapped tokens to the caller
+   *
+   * @param amount Number of tokens to wrap
+   * @return Amount of wrapper tokens minted (same as the input amount if the token has 18 decimals)
+   */
   function wrap(uint256 amount) external override returns (uint256) {
     address sender = _msgSender();
     return _wrap(sender, amount);
   }
 
+  /**
+   * @dev Same as wrap(), but approves the token transfer using a ERC2612 permit signature
+   *
+   * @param value Number of tokens to wrap
+   * @return Amount of wrapper tokens minted (same as the input amount if the token has 18 decimals)
+   */
   function wrapWithPermit(uint value, uint deadline, uint256 nonce, uint8 v, bytes32 r, bytes32 s) external returns (uint256) {
     address sender = _msgSender();
     try IPermit(address(token)).permit(sender, address(this), value, deadline, v, r, s) {
@@ -83,6 +95,13 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     _mint(sender, outputAmount, "", "");
   }
 
+  /**
+   * @dev Same as wrap(), but allows setting a recipient address
+   *
+   * @param amount Number of tokens to wrap
+   * @param recipient Address to receive tokens
+   * @return outputAmount Amount of wrapper tokens minted (same as the input amount if the token has 18 decimals)
+   */
   function wrapTo(uint256 amount, address recipient) external override returns (uint256 outputAmount) {
     address sender = _msgSender();
     TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
@@ -91,16 +110,37 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     _mint(recipient, outputAmount, "", "");
   }
 
+  /**
+   * @dev Same as wrap(), but allows setting a recipient address
+   *
+   * @param amount Number of tokens to wrap
+   * @param recipient Address to receive tokens
+   * @return amount Amount of wrapper tokens minted (same as the input amount if the token has 18 decimals)
+   */
   function gulp(address recipient) external override returns (uint256 amount) {
     amount = from20to777(token.balanceOf(address(this))).sub(ERC777WithGranularity.totalSupply());
     _mint(recipient, amount, "", "");
   }
 
+  /**
+   * @dev Unwraps tokens from the sender, returns them the inner ERC-20
+   *
+   * @param amount Number of tokens to unwrap
+   * @return unwrappedAmount Amount of unwrapped tokens (same as the input amount if the token has 18 decimals)
+   */
   function unwrap(uint256 amount) external override returns (uint256 unwrappedAmount) {
     address sender = _msgSender();
     return _unwrap(amount, sender, sender);
   }
 
+
+  /**
+   * @dev Same as unwrap(), but sends unwrapped tokens to separate address
+   *
+   * @param amount Number of tokens to unwrap
+   * @param recipient Address to receive the tokens
+   * @return unwrappedAmount Amount of unwrapped tokens (same as the input amount if the token has 18 decimals)
+   */
   function unwrapTo(uint256 amount, address recipient) external override returns (uint256 unwrappedAmount) {
     return _unwrap(amount, _msgSender(), recipient);
   }
@@ -128,6 +168,14 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     TransferHelper.safeTransfer(address(token), from, adjustedAmount);
   }
 
+  /**
+   * @dev Mints an unbounded amount of wrapper tokens to the target. Tokens must be repaid by the
+   * end of the transaction, or it will revert.
+   *
+   * @param target Address to receive the tokens (must be a ERC777Recipient)
+   * @param amount Number of tokens to mint
+   * @param data Arbitrary data to pass to the receive hook
+   */
   function flashLoan(address target, uint256 amount, bytes calldata data) external {
     borrows[target] = borrows[target].add(amount);
     _mint(target, amount, data, '');
@@ -154,6 +202,9 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     _mint(sender, numUpgradedTokens, "", "");
   }
 
+  /**
+   * @dev ERC2612 permit
+   */
   function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external {
     require(deadline >= block.timestamp, 'EXPIRED');
     bytes32 digest = keccak256(
