@@ -59,9 +59,10 @@ contract BalancerPoolExit is Receiver, InfiniteApprove {
   }
 
   function farmRewards(IFarmerToken _token, address recipient) private {
-    address[] memory rewardTokens = _token.rewardTokens();
-    for (uint i = 0; i < rewardTokens.length; i++) {
-      ERC20 rewardAdapter = ERC20(_token.getRewardAdapter(rewardTokens[i]));
+    address[] memory rewardWrappers = _token.rewardWrappers();
+
+    for (uint i = 0; i < rewardWrappers.length; i++) {
+      ERC20 rewardAdapter = ERC20(_token.getRewardAdapter(rewardWrappers[i]));
       uint256 rewardBalance = rewardAdapter.balanceOf(address(this));
       if (rewardBalance > 0) {
         rewardAdapter.transfer(recipient, rewardBalance);

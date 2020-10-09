@@ -275,11 +275,10 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove 
     require(amount % getGranularity() == 0, "ERC777: Invalid granularity");
 
     uint256 adjustedAmount = from777to20(amount);
-    farmer.withdrawFrom(token, from, adjustedAmount);
+    farmer.withdrawFrom(token, from, address(wrapper), adjustedAmount);
 
-    IWrapped777 wrapper = IWrapped777(farmer.getWrapper(token));
-    infiniteApprove(ERC20(token), address(wrapper), adjustedAmount);
-    wrapper.wrapTo(adjustedAmount, to);
+    uint wrappedAmount = wrapper.gulp(to);
+    require(wrappedAmount >= amount);
 
     emit Sent(operator, from, to, amount, userData, operatorData);
     emit Transfer(from, to, amount);

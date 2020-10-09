@@ -6,6 +6,7 @@ interface IFarmerToken {
   function rewardWrappers() external view returns (address[] memory);
 
   function rewardBalance(address token, address user) external view returns (uint256);
-  function withdrawFrom(address token, address from, uint256 amount) external;
   function getRewardAdapter(address rewardToken) external view returns (address);
+
+  function withdrawFrom(address token, address from, address wrapper, uint256 amount) external;
 }

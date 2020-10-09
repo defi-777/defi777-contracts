@@ -148,9 +148,9 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   /**
    * @dev Allows a yieldAdapter to withdraw tokens on a user's behalf
    */
-  function withdrawFrom(address token, address from, uint256 amount) external override {
-    require(msg.sender == adapterFactory.calculateWrapperAddress(address(this), token));
-    _withdraw(token, from, msg.sender, amount);
+  function withdrawFrom(address token, address from, address wrapper, uint256 amount) external override {
+    require(msg.sender == adapterFactory.calculateWrapperAddress(address(this), wrapper));
+    _withdraw(token, from, wrapper, amount);
   }
 
   function _withdraw(address token, address from, address to, uint amount) private {
