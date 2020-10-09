@@ -64,12 +64,12 @@ group('Curve pools', (accounts) => {
     const crv = await minter.token();
 
     const wrapperFactory = await WrapperFactory.new();
-    const adapterFactory = await YieldAdapterFactory.new(wrapperFactory.address);
-    const farmerFactory = await CRVFarmerFactory.new(crv, adapterFactory.address);
+    const adapterFactory = await YieldAdapterFactory.new();
 
     await wrapperFactory.createWrapper(crv);
     const crvWrapperAddress = await wrapperFactory.calculateWrapperAddress(crv);
     const crvWrapper = await Wrapped777.at(crvWrapperAddress);
+    const farmerFactory = await CRVFarmerFactory.new(crvWrapperAddress, adapterFactory.address);
 
     await wrapperFactory.createWrapper(token1.address);
     const token1WrapperAddress = await wrapperFactory.calculateWrapperAddress(token1.address);

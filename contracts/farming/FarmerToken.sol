@@ -17,6 +17,7 @@ contract FarmerToken is Wrapped777, IFarmerToken {
   uint256 private constant SCALE = uint256(10) ** 8;
 
   address[] private _rewardTokens;
+  address[] private _rewardWrappers;
   mapping(address => uint256) private scaledRewardPerToken;
   mapping(address => uint256) private scaledRemainder;
   mapping(address => uint256) private totalRewardBalance;
@@ -27,15 +28,19 @@ contract FarmerToken is Wrapped777, IFarmerToken {
 
   constructor() public {
     address yieldAdapterFactory;
-    address[] memory rewards;
-    (yieldAdapterFactory, rewards) = IFarmerTokenFactory(msg.sender).yieldAdapterFactoryAndRewards();
+    address[] memory rewardWrappers;
+    (yieldAdapterFactory, rewardWrappers) = IFarmerTokenFactory(msg.sender).yieldAdapterFactoryAndRewards();
 
     IYieldAdapterFactory _adapterFactory = IYieldAdapterFactory(yieldAdapterFactory);
     adapterFactory = _adapterFactory;
 
-    _rewardTokens = rewards;
-    for (uint8 i = 0; i < rewards.length; i++) {
-      _adapterFactory.createWrapper(address(this), rewards[i]);
+    _rewardWrappers = rewardWrappers;
+    for (uint8 i = 0; i < rewardWrappers.length; i++) {
+      address wrapper = rewardWrappers[i];
+      address token = address(Wrapped777(wrapper).token());
+      _rewardTokens.push(token);
+
+      _adapterFactory.createWrapper(address(this), rewardWrappers[i]);
     }
 
     ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Farmer777"), address(this));
@@ -48,12 +53,15 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     return _rewardTokens;
   }
 
-  function getWrapper(address token) external override returns (address) {
-    return AddressBook(adapterFactory.wrapperFactory()).getWrapperAddress(token);
+  /**
+   * @return List of ERC777 wrappers for the reward tokens
+   */
+  function rewardWrappers() external view override returns (address[] memory) {
+    return _rewardWrappers;
   }
 
-  function getRewardAdapter(address yieldToken) external view override returns (address) {
-    return adapterFactory.calculateWrapperAddress(address(this), yieldToken);
+  function getRewardAdapter(address rewardWrapper) external view override returns (address) {
+    return adapterFactory.calculateWrapperAddress(address(this), rewardWrapper);
   }
 
   function _mint(

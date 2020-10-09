@@ -18,13 +18,17 @@ group('Farmer Token', (accounts) => {
   it('should allocate tokens correctly', async function() {
     this.timeout(10000);
 
+    const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
     const factory = await FarmerTokenFactory.new(adapterFactory.address);
     const token = await TestERC20.new();
     const reward1 = await TestERC20.new();
 
-    await factory.createWrapper(token.address, [reward1.address]);
-    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [reward1.address]);
+    await wrapperFactory.createWrapper(reward1.address);
+    const rewardWrapperAddress = await wrapperFactory.calculateWrapperAddress(reward1.address);
+
+    await factory.createWrapper(token.address, [rewardWrapperAddress]);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
 
@@ -86,17 +90,19 @@ group('Farmer Token', (accounts) => {
   it('should let users withdraw using yield tokens', async () => {
     const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new(wrapperFactory.address);
-    const factory = await FarmerTokenFactory.new(adapterFactory.address);
+    const farmerFactory = await FarmerTokenFactory.new(adapterFactory.address);
     const token = await TestERC20.new();
     const reward1 = await TestERC20.new();
 
     await wrapperFactory.createWrapper(reward1.address);
-    await factory.createWrapper(token.address, [reward1.address]);
-    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [reward1.address]);
+    const rewardWrapperAddress = await wrapperFactory.calculateWrapperAddress(reward1.address);
+
+    await farmerFactory.createWrapper(token.address, [rewardWrapperAddress]);
+    const wrapperAddress = await farmerFactory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
 
-    const reward1Wrapper = await TestERC20.at(await wrapperFactory.calculateWrapperAddress(reward1.address));
-    const reward1Adapter = await TestERC20.at(await adapterFactory.calculateWrapperAddress(wrapperAddress, reward1.address));
+    const reward1Wrapper = await TestERC20.at(rewardWrapperAddress);
+    const reward1Adapter = await TestERC20.at(await adapterFactory.calculateWrapperAddress(wrapperAddress, rewardWrapperAddress));
 
     await token.transfer(user1, eth(2), { from: admin });
     await token.approve(wrapperAddress, eth(10), { from: user1 });
@@ -112,13 +118,17 @@ group('Farmer Token', (accounts) => {
   });
 
   it('should let a farmer token be unwrapped down to 0', async () => {
+    const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
     const factory = await FarmerTokenFactory.new(adapterFactory.address);
     const token = await TestERC20.new();
     const reward1 = await TestERC20.new();
 
-    await factory.createWrapper(token.address, [reward1.address]);
-    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [reward1.address]);
+    await wrapperFactory.createWrapper(reward1.address);
+    const rewardWrapperAddress = await wrapperFactory.calculateWrapperAddress(reward1.address);
+
+    await factory.createWrapper(token.address, [rewardWrapperAddress]);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
 
@@ -146,13 +156,17 @@ group('Farmer Token', (accounts) => {
   });
 
   it('should let a farmer token be unwrapped with other users', async () => {
+    const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
     const factory = await FarmerTokenFactory.new(adapterFactory.address);
     const token = await TestERC20.new();
     const reward1 = await TestERC20.new();
 
-    await factory.createWrapper(token.address, [reward1.address]);
-    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [reward1.address]);
+    await wrapperFactory.createWrapper(reward1.address);
+    const rewardWrapperAddress = await wrapperFactory.calculateWrapperAddress(reward1.address);
+
+    await factory.createWrapper(token.address, [rewardWrapperAddress]);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
 
@@ -195,13 +209,17 @@ group('Farmer Token', (accounts) => {
   it('should handle remainders well', async function () {
     this.timeout(20000);
 
+    const wrapperFactory = await WrapperFactory.new();
     const adapterFactory = await YieldAdapterFactory.new('0x0000000000000000000000000000000000000000');
     const factory = await FarmerTokenFactory.new(adapterFactory.address);
     const token = await TestERC20.new();
     const reward1 = await TestERC20.new();
 
-    await factory.createWrapper(token.address, [reward1.address]);
-    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [reward1.address]);
+    await wrapperFactory.createWrapper(reward1.address);
+    const rewardWrapperAddress = await wrapperFactory.calculateWrapperAddress(reward1.address);
+
+    await factory.createWrapper(token.address, [rewardWrapperAddress]);
+    const wrapperAddress = await factory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
 

@@ -24,6 +24,7 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove 
 
   IFarmerToken public immutable farmer;
   address public immutable token;
+  IWrapped777 public immutable wrapper;
 
   string internal _name;
   string internal _symbol;
@@ -39,15 +40,16 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove 
 
   constructor() public {
     IYieldAdapterFactory factory = IYieldAdapterFactory(msg.sender);
-    address _farmer = factory.nextToken();
-    address _token = factory.nextReward();
-    farmer = IFarmerToken(_farmer);
-    token = _token;
+    farmer = IFarmerToken(factory.nextToken());
+    IWrapped777 _wrapper = IWrapped777(factory.nextReward());
+    ERC20 _token = _wrapper.token();
+    token = address(_token);
+    wrapper = _wrapper;
 
-    _name = string(abi.encodePacked(SafeERC20Namer.tokenName(_token), "-777 Yield"));
-    _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(_token), "777y"));
+    _name = string(abi.encodePacked(SafeERC20Namer.tokenName(address(_token)), "-777 Yield"));
+    _symbol = string(abi.encodePacked(SafeERC20Namer.tokenSymbol(address(_token)), "777y"));
 
-    setDecimals(ERC20(_token).decimals());
+    setDecimals(_token.decimals());
 
     // register interfaces
     _ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("ERC777Token"), address(this));

@@ -100,7 +100,7 @@ group('Balancer Pools', (accounts) => {
     this.timeout(3000);
 
     const wrapperFactory = await WrapperFactory.new();
-    const adapterFactory = await YieldAdapterFactory.new(wrapperFactory.address);
+    const adapterFactory = await YieldAdapterFactory.new();
     const farmerFactory = await FarmerTokenFactory.new(adapterFactory.address);
     const poolFactory = await BalancerPoolFactory.new(weth);
 
@@ -109,8 +109,8 @@ group('Balancer Pools', (accounts) => {
     await wrapperFactory.createWrapper(dai);
     const daiWrapper = await Wrapped777.at(await wrapperFactory.calculateWrapperAddress(dai));
 
-    await farmerFactory.createWrapper(bpool.address, [dai]);
-    const poolWrapperAddress = await farmerFactory.calculateWrapperAddress(bpool.address, [dai]);
+    await farmerFactory.createWrapper(bpool.address, [daiWrapper.address]);
+    const poolWrapperAddress = await farmerFactory.calculateWrapperAddress(bpool.address, [daiWrapper.address]);
     const poolWrapper = await FarmerToken.at(poolWrapperAddress);
 
     await poolFactory.createWrapper(poolWrapperAddress);
@@ -123,7 +123,7 @@ group('Balancer Pools', (accounts) => {
     await daiToken.transfer(poolWrapperAddress, eth(1));
     await poolWrapper.harvest(dai);
 
-    const daiAdapter = await IERC20.at(await poolWrapper.getRewardAdapter(dai));
+    const daiAdapter = await IERC20.at(await poolWrapper.getRewardAdapter(daiWrapper.address));
     expect(await str(daiAdapter.balanceOf(user))).to.equal(eth(1));
 
     // Exit

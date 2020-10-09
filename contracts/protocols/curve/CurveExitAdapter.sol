@@ -49,7 +49,7 @@ contract CurveExitAdapter is Receiver {
   }
 
   function farmRewards(IFarmerToken _token, address recipient) private {
-    address[] memory rewardTokens = _token.rewardTokens();
+    address[] memory rewardTokens = _token.rewardWrappers();
     for (uint i = 0; i < rewardTokens.length; i++) {
       ERC20 rewardAdapter = ERC20(_token.getRewardAdapter(rewardTokens[i]));
       rewardAdapter.transfer(recipient, rewardAdapter.balanceOf(address(this)));

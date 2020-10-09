@@ -12,15 +12,15 @@ contract CRVFarmerFactory is ICRVFarmerFactory {
 
   address private _nextToken;
   address private _nextGague;
-  address private immutable _crv;
+  address private immutable _crvWrapper;
   address private immutable _adapterFactory;
 
   bytes32 public constant ADAPTER_BYTECODE_HASH = keccak256(type(CRVFarmerToken).creationCode);
 
   event WrapperCreated(address indexed token, address gague);
 
-  constructor(address __crv, address __adapterFactory) public {
-    _crv = __crv;
+  constructor(address crvWrapper, address __adapterFactory) public {
+    _crvWrapper = crvWrapper;
     _adapterFactory = __adapterFactory;
   }
 
@@ -64,7 +64,7 @@ contract CRVFarmerFactory is ICRVFarmerFactory {
 
   function yieldAdapterFactoryAndRewards() external override view returns(address, address[] memory) {
     address[] memory _rewards = new address[](1);
-    _rewards[0] = _crv;
+    _rewards[0] = _crvWrapper;
     return (_adapterFactory, _rewards);
   }
 }
