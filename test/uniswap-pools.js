@@ -24,7 +24,7 @@ group('Uniswap Pools', (accounts) => {
 
   before(() => singletons.ERC1820Registry(defaultSender));
 
-  it('should join and exit a balancer pool with ETH', async function() {
+  it('should join a Uniswap pool with ETH', async function() {
     this.timeout(3000);
 
     const uniswapRouter = await TestUniswapRouter.new();
@@ -53,38 +53,37 @@ group('Uniswap Pools', (accounts) => {
     expect(await str(poolWrapper.balanceOf(user))).to.equal('2924533156400558528');
   });
 
-  // it('should join a balancer pool with Dai777', async function() {
-  //   this.timeout(3000);
+  it('should join a Uniswap pool with Dai777', async function() {
+    this.timeout(3000);
 
-  //   const wrapperFactory = await WrapperFactory.new();
-  //   const poolFactory = await BalancerPoolFactory.new(weth);
+    const uniswapRouter = await TestUniswapRouter.new();
+    const wrapperFactory = await WrapperFactory.new();
+    const poolFactory = await UniswapPoolAdapterFactory.new(uniswapRouter.address);
 
-  //   const bpool = await TestBPool.new([weth, dai]);
+    const dai = await TestERC20.new();
+    const weth = await IWETH.at(await uniswapRouter.WETH());
 
-  //   await wrapperFactory.createWrapper(bpool.address);
-  //   const poolWrapperAddress = await wrapperFactory.calculateWrapperAddress(bpool.address);
-  //   const poolWrapper = await Wrapped777.at(poolWrapperAddress);
+    const daiWrapperAddress = await wrapperFactory.calculateWrapperAddress(dai.address);
+    await wrapperFactory.createWrapper(dai.address);
+    const daiWrapper = await Wrapped777.at(daiWrapperAddress);
+    await dai.approve(daiWrapperAddress, eth(10));
+    await daiWrapper.wrapTo(eth(10), user);
 
-  //   const daiWrapperAddress = await wrapperFactory.calculateWrapperAddress(dai);
-  //   await wrapperFactory.createWrapper(dai);
-  //   const daiWrapper = await Wrapped777.at(daiWrapperAddress);
-  //   (await IERC20.at(dai)).approve(daiWrapperAddress, eth(1));
-  //   await daiWrapper.wrapTo(eth(1), user);
+    const pair = await TestUniswapPair.new(weth.address, dai.address);
+    await dai.transfer(pair.address, eth(50));
+    await weth.deposit({ value: eth(1) });
+    await weth.transfer(pair.address, eth(1));
+    await pair.mint(defaultSender);
 
-  //   await poolFactory.createWrapper(poolWrapperAddress);
-  //   const poolAdapterAddress = await poolFactory.calculateWrapperAddress(poolWrapperAddress);
+    await wrapperFactory.createWrapper(pair.address);
+    const poolWrapperAddress = await wrapperFactory.calculateWrapperAddress(pair.address);
+    const poolWrapper = await Wrapped777.at(poolWrapperAddress);
 
-  //   await daiWrapper.transfer(poolAdapterAddress, eth(1), { from: user });
+    await poolFactory.createAdapter(poolWrapperAddress);
+    const poolAdapter = await UniswapPoolAdapter.at(await poolFactory.calculateAdapterAddress(poolWrapperAddress));
 
-  //   expect(await str(poolWrapper.balanceOf(user))).to.equal(eth(1));
+    await daiWrapper.transfer(poolAdapter.address, eth(10), { from: user });
 
-  //   // Exit
-  //   const exitFactory = await BalancerPoolExitFactory.new(weth);
-
-  //   await exitFactory.createWrapper(daiWrapperAddress);
-  //   const exitAdapter = await exitFactory.calculateWrapperAddress(daiWrapperAddress);
-
-  //   await poolWrapper.transfer(exitAdapter, eth(1), { from: user });
-  //   expect(await str(daiWrapper.balanceOf(user))).to.equal(eth(1));
-  // });
+    expect(await str(poolWrapper.balanceOf(user))).to.equal('673885077677817013');
+  });
 });
