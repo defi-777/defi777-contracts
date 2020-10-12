@@ -2,6 +2,8 @@ const { getContract, web3, group, getAccounts, str, getDefiAddresses, eth } = re
 const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
+const UniswapAdapter = getContract('UniswapAdapter');
+const UniswapAdapterFactory = getContract('UniswapAdapterFactory');
 const UniswapPoolAdapterFactory = getContract('UniswapPoolAdapterFactory');
 const UniswapPoolAdapter = getContract('UniswapPoolAdapter');
 const FarmerToken = getContract('FarmerToken');
@@ -70,6 +72,7 @@ group('Uniswap Pools', (accounts) => {
     await daiWrapper.wrapTo(eth(10), user);
 
     const pair = await TestUniswapPair.new(weth.address, dai.address);
+    await pair.setFactory(await uniswapRouter.factory());
     await dai.transfer(pair.address, eth(50));
     await weth.deposit({ value: eth(1) });
     await weth.transfer(pair.address, eth(1));
@@ -85,5 +88,15 @@ group('Uniswap Pools', (accounts) => {
     await daiWrapper.transfer(poolAdapter.address, eth(10), { from: user });
 
     expect(await str(poolWrapper.balanceOf(user))).to.equal('673885077677817013');
+
+    // Exit
+    const uniswapFactory = await UniswapAdapterFactory.new(uniswapRouter.address);
+
+    await uniswapFactory.createAdapter(daiWrapperAddress);
+    const adapterAddress = await uniswapFactory.calculateAdapterAddress(daiWrapperAddress);
+
+    await poolWrapper.transfer(adapterAddress, '673885077677817013', { from: user });
+
+    expect(await str(daiWrapper.balanceOf(user))).to.equal('87009577371045178');
   });
 });

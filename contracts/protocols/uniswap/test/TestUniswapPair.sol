@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -44,6 +45,7 @@ contract TestUniswapPair is ERC20 {
     uint public constant MINIMUM_LIQUIDITY = 10**3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
+    address public factory;
     address public token0;
     address public token1;
 
@@ -61,6 +63,10 @@ contract TestUniswapPair is ERC20 {
         unlocked = 0;
         _;
         unlocked = 1;
+    }
+
+    function setFactory(address _factory) external {
+        factory = _factory;
     }
 
     function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
