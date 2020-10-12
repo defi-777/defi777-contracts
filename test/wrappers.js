@@ -1,7 +1,6 @@
 const { getContract, web3, group, getAccounts, str, eth } = require('./test-lib');
 const { singletons, expectRevert } = require('@openzeppelin/test-helpers');
 const { signDaiPermit, signERC2612Permit } = require('eth-permit');
-const { setChainIdOverride } = require('eth-permit/dist/rpc');
 const { expect } = require('chai');
 
 const MaliciousUpgradeToken = getContract('MaliciousUpgradeToken');
@@ -55,7 +54,6 @@ group('Wrapped777', (accounts) => {
     expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
     expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
 
-    setChainIdOverride(1);
     const result = await signERC2612Permit(web3.currentProvider, token.address, defaultSender, wrapper.address, eth('10'));
     await wrapper.wrapWithPermit(eth('10'), result.deadline, result.nonce, result.v, result.r, result.s);
 
@@ -74,7 +72,6 @@ group('Wrapped777', (accounts) => {
     expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
     expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
 
-    setChainIdOverride(1);
     const result = await signDaiPermit(web3.currentProvider, token.address, defaultSender, wrapper.address);
     await wrapper.wrapWithPermit(eth('10'), result.expiry, result.nonce, result.v, result.r, result.s);
 

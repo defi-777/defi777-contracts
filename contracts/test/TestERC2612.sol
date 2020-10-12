@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -11,13 +12,12 @@ contract TestERC2612 is ERC20("Uniswap token", "UNI") {
   constructor() public {
     _mint(msg.sender, 100 ether);
 
-    uint256 chainId = 1; // Hardcoded for testing purposes
     DOMAIN_SEPARATOR = keccak256(
       abi.encode(
         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
         keccak256(bytes(name())),
         keccak256(bytes('1')),
-        chainId,
+        chainId(),
         address(this)
       )
     );
@@ -35,5 +35,11 @@ contract TestERC2612 is ERC20("Uniswap token", "UNI") {
     address recoveredAddress = ecrecover(digest, v, r, s);
     require(recoveredAddress != address(0) && recoveredAddress == owner, 'UniswapV2: INVALID_SIGNATURE');
     _approve(owner, spender, value);
+  }
+
+  function chainId() private pure returns (uint _chainId) {
+    assembly {
+      _chainId := chainid()
+    }
   }
 }

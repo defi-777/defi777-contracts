@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -17,7 +18,7 @@ contract TestDai is ERC20("Dai Stablecoin", "Dai") {
             keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
             keccak256(bytes("Dai Stablecoin")),
             keccak256(bytes("1")),
-            1, // chainId
+            chainId(),
             address(this)
         ));
   }
@@ -44,5 +45,11 @@ contract TestDai is ERC20("Dai Stablecoin", "Dai") {
     uint wad = allowed ? uint(-1) : 0;
 
     _approve(holder, spender, wad);
+  }
+
+  function chainId() private pure returns (uint _chainId) {
+    assembly {
+      _chainId := chainid()
+    }
   }
 }

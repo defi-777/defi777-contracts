@@ -245,10 +245,10 @@
     fs-extra "^8.1.0"
     try-require "^1.2.1"
 
-"@openzeppelin/contracts@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.0.0.tgz#89bc0d32fc9eb257cf6499f2497a1b4a6715f186"
-  integrity sha512-u7oATjUK6jffDOoIjVQ7vJ2fnFKlfDS1CJzrMpp+YtGQ2fhdSk0kXjZTxk8Pj1SPVZRNES3yo0r144v8BsuRhQ==
+"@openzeppelin/contracts@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.2.0.tgz#3e6b3a7662d8ed64271ade96ef42655db983fd9d"
+  integrity sha512-bUOmkSoPkjnUyMiKo6RYnb0VHBk5D9KKDAgNLzF41aqAM3TeE0yGdFF5dVRcV60pZdJLlyFT/jjXIZCWyyEzAQ==
 
 "@openzeppelin/test-environment@^0.1.4":
   version "0.1.4"
@@ -2848,10 +2848,10 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
-eth-permit@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/eth-permit/-/eth-permit-0.1.4.tgz#d094f4968cc9a5cbcce6b7017442d15915914851"
-  integrity sha512-qbJClhl70hl+09JJeDXsyJql7zMHz7rm1NQBi2gbxx2qL1/MUcWqxbtjAg57V2LX7UVOIYZHFpuQEdVyW4Ihkg==
+eth-permit@^0.1.8:
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/eth-permit/-/eth-permit-0.1.8.tgz#de992ee4b1a9b8a6f66dc84fc07dc312b5b32bed"
+  integrity sha512-2DFaiF3UjjU3G4Z5ZzDkrat+tSlm5447ITBu+VJLUYP4JA99yisKdjDGGt9QRhEWMzDYbyDiTVVO3gRjdVzqsw==
   dependencies:
     utf8 "^3.0.0"
 

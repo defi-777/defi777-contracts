@@ -9,7 +9,7 @@
     "integration-test": "truffle exec ./integration-test/integration-test.js"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.0.0",
+    "@openzeppelin/contracts": "^3.2.0",
     "@uniswap/lib": "^1.1.2"
   },
   "devDependencies": {
@@ -21,7 +21,7 @@
     "@truffle/hdwallet-provider": "^1.0.35",
     "chai": "^4.2.0",
     "dotenv": "^8.2.0",
-    "eth-permit": "^0.1.4",
+    "eth-permit": "^0.1.8",
     "mocha": "^7.1.1",
     "truffle": "^5.1.22",
     "truffle-flattener": "^1.4.3",

@@ -1,3 +1,5 @@
+const { setChainIdOverride } = require('eth-permit/dist/rpc');
+
 let getContract, _web3, group;
 let getAccounts = (accounts) => accounts;
 
@@ -49,6 +51,10 @@ const getWrappedToken = async (tokenContract) => {
   await wrapper.wrap(_web3.utils.toWei('100', 'ether'));
 
   return [wrapper, token];
+}
+
+if (!global.config) {
+  setChainIdOverride(1);
 }
 
 module.exports = {
