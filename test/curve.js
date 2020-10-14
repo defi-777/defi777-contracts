@@ -39,7 +39,7 @@ group('Curve pools', (accounts) => {
 
     const adapter = await CurveAdapter.new(curvePoolWrapperAddress, 3);
 
-    token1.approve(token1WrapperAddress, eth(1));
+    await token1.approve(token1WrapperAddress, eth(1));
     await token1Wrapper.wrapTo(eth(1), user);
 
     await token1Wrapper.transfer(adapter.address, eth(1), { from: user });

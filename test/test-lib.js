@@ -57,10 +57,30 @@ if (!global.config) {
   setChainIdOverride(1);
 }
 
+const getWrapperFactory = async () => {
+  const WrapperFactory = getContract('WrapperFactory');
+  const Wrapped777 = getContract('Wrapped777');
+
+  const contract = await WrapperFactory.new();
+  const getWrapper = async (token) => {
+    const [wrapperAddress] = await Promise.all([
+      contract.calculateWrapperAddress(token),
+      contract.createWrapper(token),
+    ]);
+    const wrapper = await Wrapped777.at(wrapperAddress);
+    return wrapper;
+  };
+
+  const getWrappers = (addresses) => Promise.all(addresses.map(getWrapper));
+
+  return { contract, getWrapper, getWrappers };
+};
+
 module.exports = {
   getContract,
   web3: _web3,
   getAccounts,
+  getWrapperFactory,
   group,
   str,
   getDefiAddresses,
