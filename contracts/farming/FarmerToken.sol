@@ -34,14 +34,17 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     IYieldAdapterFactory _adapterFactory = IYieldAdapterFactory(yieldAdapterFactory);
     adapterFactory = _adapterFactory;
 
-    _rewardWrappers = rewardWrappers;
+    address[] memory tmpRewardTokens = new address[](rewardWrappers.length);
     for (uint8 i = 0; i < rewardWrappers.length; i++) {
       address wrapper = rewardWrappers[i];
       address token = address(Wrapped777(wrapper).token());
-      _rewardTokens.push(token);
+      tmpRewardTokens[i] = token;
 
       _adapterFactory.createWrapper(address(this), rewardWrappers[i]);
     }
+
+    _rewardTokens = tmpRewardTokens;
+    _rewardWrappers = rewardWrappers;
 
     ERC1820_REGISTRY.setInterfaceImplementer(address(this), keccak256("Farmer777"), address(this));
   }
