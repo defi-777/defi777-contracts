@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC777/IERC777.sol";
@@ -26,8 +27,8 @@ contract TestFlashLoanRecipient is Receiver {
       require(keccak256(data) == keccak256(bytes('test')), 'Wrong data');
 
       require(_token.balanceOf(address(this)) == amount, 'Incorrect balance');
-
-      _token.send(token, amount, bytes('flreturn'));
+    } else {
+      Wrapped777(address(_token)).transfer(0x0000000000000000000000000000000000000001, 1);
     }
   }
 }

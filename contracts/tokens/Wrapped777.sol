@@ -19,10 +19,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
 
   ERC20 public immutable override token;
 
-  ////////// For flashloans:
-  event FlashLoan(address indexed target, uint256 amount);
-  mapping(address => uint256) private borrows;
-
+  event FlashMint(address indexed target, uint256 amount);
 
   ////////// For permit:
   bytes32 public immutable DOMAIN_SEPARATOR;
@@ -159,10 +156,6 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     }
 
     _burn(address(this), amount, "", "");
-    if (keccak256(data) == keccak256(bytes('flreturn'))) {
-      borrows[from] = borrows[from].sub(amount);
-      return;
-    }
 
     uint256 adjustedAmount = from777to20(amount);
     TransferHelper.safeTransfer(address(token), from, adjustedAmount);
@@ -177,12 +170,10 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
    * @param data Arbitrary data to pass to the receive hook
    */
   function flashMint(address target, uint256 amount, bytes calldata data) external {
-    borrows[target] = borrows[target].add(amount);
     _mint(target, amount, data, '');
+    _burn(target, amount, data, '');
 
-    require(borrows[target] == 0, 'FLASH-FAIL');
-
-    emit FlashLoan(target, amount);
+    emit FlashMint(target, amount);
   }
 
   function tryTokenUpgrade(address oldWrapper, address sender, uint256 amount) private {

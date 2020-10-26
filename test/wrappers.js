@@ -162,7 +162,7 @@ group('Wrapped777', (accounts) => {
 
     await expectRevert(
       tester.runInvalidFlashLoan(wrapper.address, toWei('10', 'ether')),
-      'FLASH-FAIL',
+      'ERC777: BURN-EXCESS',
     );
   });
 
