@@ -43,7 +43,7 @@ contract AToken777 is ERC777WithoutBalance, IWrapped777, GuardedReceiver {
     whitelistReceiveToken(address(this));
     whitelistReceiveToken(address(_reserveWrapper));
 
-    ERC20 _token = ERC20(_lendingPool.core().getReserveATokenAddress(address(_reserve)));
+    ERC20 _token = ERC20(_lendingPool.core().getReserveATokenAddress(address(reserve)));
     token = _token;
 
     _name = string(abi.encodePacked(_token.name(), "-777"));
