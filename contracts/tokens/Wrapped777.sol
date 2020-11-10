@@ -149,7 +149,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
     TransferHelper.safeTransfer(address(token), recipient, unwrappedAmount);
   }
 
-  function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory data) internal override {
+  function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory) internal override {
     if (address(_token) != address(this)) {
       tryTokenUpgrade(address(_token), from, amount);
       return;
