@@ -1,21 +1,32 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../ILendingPool.sol";
-import "./TestAaveLendingPoolCore.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./TestAToken.sol";
 
-contract TestAaveLendingPool is ILendingPool {
-  address private _core;
+contract TestAaveLendingPool {
+  mapping(address => address) public getAToken;
 
-  constructor() public {
-    _core = address(new TestAaveLendingPoolCore());
+  function createAToken(address token) external {
+    getAToken[token] = address(new TestAToken());
   }
 
-  function core() external view override returns (ILendingPoolCore) {
-    return ILendingPoolCore(_core);
+  function deposit(
+    address reserve,
+    uint256 amount,
+    address onBehalfOf,
+    uint16 /*referralCode*/
+  ) external {
+    IERC20(reserve).transferFrom(msg.sender, address(this), amount);
+    TestAToken(getAToken[reserve]).mint(onBehalfOf, amount);
   }
 
-  function deposit(address _reserve, uint256 _amount, uint16 _referralCode) external payable override {
-    TestAaveLendingPoolCore(_core).deposit{value: msg.value}(_reserve, _amount, msg.sender);
+  function withdraw(
+    address reserve,
+    uint256 amount,
+    address to
+  ) external {
+    TestAToken(getAToken[reserve]).burn(msg.sender, amount);
+    IERC20(reserve).transfer(to, amount);
   }
 }
