@@ -13,14 +13,17 @@ import "./interfaces/ILendingPool.sol";
 contract AaveAdapter is Receiver, InfiniteApprove, Ownable {
   ILendingPoolAddressesProvider public immutable addressProvider;
 
-  mapping(address => address) private wrappedATokenToWrapper;
-  mapping(address => address) private tokenToWrappedAToken;
-  IWETH private immutable weth;
+  mapping(address => address) public wrappedATokenToWrapper;
+  mapping(address => address) public tokenToWrappedAToken;
+  IWETH public immutable weth;
   uint16 constant private referralCode = 45;
 
-  constructor(address _addressProvider, IWETH _weth) public {
+  constructor(address _addressProvider, IWETH _weth, address firstOwner) public {
     addressProvider = ILendingPoolAddressesProvider(_addressProvider);
     weth = _weth;
+
+    // Needs to be explicitly set since we deploy through a Create2 proxy
+    transferOwnership(firstOwner);
   }
 
   receive() external payable {
@@ -31,7 +34,7 @@ contract AaveAdapter is Receiver, InfiniteApprove, Ownable {
     }
   }
 
-  function setWrappedAToken(address wrappedToken, address wrappedAToken) external onlyOwner {
+  function setWrappedAToken(address wrappedToken, address wrappedAToken) public onlyOwner {
     if (wrappedToken == address(weth)) {
       tokenToWrappedAToken[address(weth)] = wrappedAToken;
       wrappedATokenToWrapper[wrappedAToken] = address(weth);
