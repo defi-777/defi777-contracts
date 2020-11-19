@@ -1,4 +1,4 @@
-const { getContract, web3, group, getAccounts, str, eth } = require('./test-lib');
+const { getContract, web3, group, getAccounts, str, eth, getWrappedToken } = require('./test-lib');
 const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
@@ -8,6 +8,7 @@ const TestERC20 = getContract('TestERC20');
 const TestUniswapRouter = getContract('TestUniswapRouter');
 const UniswapAdapter = getContract('UniswapAdapter');
 const UniswapAdapterFactory = getContract('UniswapAdapterFactory');
+const UniswapETHAdapter = getContract('UniswapETHAdapter');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 const IWETH = getContract('IWETH');
@@ -85,6 +86,22 @@ group('Uniswap', (accounts) => {
 
     const startingBalance = await web3.eth.getBalance(user)
     const { receipt, logs } = await wrapper.transfer(exchangeAddress, eth(1), { from: user, gasPrice: ONE_GWEI });
+
+    const ethSpentOnGas = ONE_GWEI * receipt.gasUsed;
+    expect(await web3.eth.getBalance(user))
+      .to.equal((toBN(startingBalance).add(toBN(19550169617820656)).sub(toBN(ethSpentOnGas))).toString());
+  });
+
+  it('Should swap a 777 token for ETH using the ETH Adapter', async () => {
+    const [wrapper, token] = await getWrappedToken();
+    await wrapper.transfer(user, toWei('2', 'ether'));
+
+    const { uniswapRouter } = await setupUniswap(token);
+
+    const adapter = await UniswapETHAdapter.new(uniswapRouter.address);
+
+    const startingBalance = await web3.eth.getBalance(user)
+    const { receipt, logs } = await wrapper.transfer(adapter.address, eth(1), { from: user, gasPrice: ONE_GWEI });
 
     const ethSpentOnGas = ONE_GWEI * receipt.gasUsed;
     expect(await web3.eth.getBalance(user))

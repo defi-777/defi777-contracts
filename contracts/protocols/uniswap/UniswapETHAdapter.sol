@@ -6,50 +6,27 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "../../interfaces/IWETH.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
-import "./IUniswapAdapterFactory.sol";
 
-contract UniswapAdapter is Receiver, InfiniteApprove {
+contract UniswapETHAdapter is Receiver {
   using SafeMath for uint256;
 
-  Wrapped777 public immutable wrapper;
   IUniswapV2Router01 public immutable router;
   IUniswapV2Factory public immutable uniswapFactory;
   address private immutable weth;
 
-  constructor() public {
-    IUniswapAdapterFactory factory = IUniswapAdapterFactory(msg.sender);
-    Wrapped777 _wrapper = Wrapped777(factory.nextToken());
-    wrapper = _wrapper;
-    IUniswapV2Router01 _router = factory.uniswapRouter();
+  constructor(IUniswapV2Router01 _router) public {
     weth = _router.WETH();
     router = _router;
     uniswapFactory = _router.factory();
-    infiniteApprove(_wrapper.token(), address(_wrapper), 1);
   }
 
   receive() external payable {
-    if (msg.sender == weth) {
-      return;
-    }
-
-    IWETH(weth).deposit{ value: msg.value }();
-
-    ERC20 outputToken = wrapper.token();
-    uint256 outputAmount = executeSwap(weth, address(outputToken), msg.value, address(this));
-    require (outputAmount > 0, "NO_PAIR");
-
-    wrapAndReturn(msg.sender, outputAmount);
+    require(msg.sender == weth);
   }
 
-  /**
-    * Ex: Assume this is a Dai Uniswap contract
-    * If Dai777 is sent to this, it will swap to ETH
-    * If USDC777 is sent to this, it wall swap to Dai777
-    */
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
     // Todo: support non-wrapped 777 tokens
     Wrapped777 inputWrapper = Wrapped777(address(_token));
@@ -62,26 +39,11 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
 
     uint unwrappedBalance = inputWrapper.unwrap(amount);
 
-    if (address(_token) == address(wrapper)) {
-      uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, address(this));
-      require(wethAmount > 0, "NO_PAIR");
+    uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, address(this));
+    require(wethAmount > 0, "NO_PAIR");
 
-      IWETH(weth).withdraw(wethAmount);
-      TransferHelper.safeTransferETH(from, wethAmount);
-    } else {
-      ERC20 outputToken = wrapper.token();
-      uint256 outputAmount = executeSwap(address(unwrappedInput), address(outputToken), unwrappedBalance, address(this));
-
-      if (outputAmount == 0) {
-        address wethOutPair = uniswapFactory.getPair(weth, address(outputToken));
-        uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, wethOutPair);
-        outputAmount = executeSwap(weth, address(outputToken), wethAmount, 0, address(this));
-      }
-
-      require(outputAmount > 0, "NO_PAIR");
-
-      wrapAndReturn(from, outputAmount);
-    }
+    IWETH(weth).withdraw(wethAmount);
+    TransferHelper.safeTransferETH(from, wethAmount);
   }
 
   function executeSwap(address input, address out, uint256 swapAmount, address to) private returns (uint256 outputAmount) {
@@ -118,7 +80,6 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
   }
 
   function burnAndSwapLPToken(Wrapped777 inputWrapper, IUniswapV2Pair pair, address recipient, uint256 amount) private {
-    ERC20 outputToken = wrapper.token();
     address token0 = address(pair.token0());
     address token1 = address(pair.token1());
 
@@ -126,19 +87,20 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
 
     (uint amount0, uint amount1) = pair.burn(address(this));
 
-    (address keepToken, address swapToken) = address(outputToken) == token0
+    (address keepToken, address swapToken) = weth == token0
       ? (token0, token1)
       : (token1, token0);
-    require(keepToken == address(outputToken), 'BAD_PAIR');
+    require(keepToken == weth, 'BAD_PAIR');
 
-    (uint256 keepAmount, uint256 swapAmount) = address(outputToken) == token0
+    (uint256 keepAmount, uint256 swapAmount) = weth == token0
       ? (amount0, amount1)
       : (amount1, amount0);
 
-    executeSwap(swapToken, keepToken, swapAmount, address(wrapper));
-    outputToken.transfer(address(wrapper), keepAmount);
+    uint256 outputAmount = executeSwap(swapToken, keepToken, swapAmount, address(this));
 
-    wrapper.gulp(recipient);
+    uint256 totalWETH = outputAmount + keepAmount;
+    IWETH(weth).withdraw(totalWETH);
+    TransferHelper.safeTransferETH(recipient, totalWETH);
   }
 
   function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
@@ -148,11 +110,5 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
     uint numerator = amountInWithFee.mul(reserveOut);
     uint denominator = reserveIn.mul(1000).add(amountInWithFee);
     amountOut = numerator / denominator;
-  }
-
-
-  function wrapAndReturn(address recipient, uint256 amount) private {
-    infiniteApprove(wrapper.token(), address(wrapper), amount);
-    wrapper.wrapTo(amount, recipient);
   }
 }
