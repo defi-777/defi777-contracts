@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "../../interfaces/IWETH.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./IUniswapAdapterFactory.sol";
 
-contract UniswapAdapter is Receiver, InfiniteApprove {
+contract UniswapAdapter is Receiver {
   using SafeMath for uint256;
 
   Wrapped777 public immutable wrapper;
@@ -28,7 +27,6 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
     weth = _router.WETH();
     router = _router;
     uniswapFactory = _router.factory();
-    infiniteApprove(_wrapper.token(), address(_wrapper), 1);
   }
 
   receive() external payable {
@@ -39,10 +37,10 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
     IWETH(weth).deposit{ value: msg.value }();
 
     ERC20 outputToken = wrapper.token();
-    uint256 outputAmount = executeSwap(weth, address(outputToken), msg.value, address(this));
+    uint256 outputAmount = executeSwap(weth, address(outputToken), msg.value, address(wrapper));
     require (outputAmount > 0, "NO_PAIR");
 
-    wrapAndReturn(msg.sender, outputAmount);
+    wrapper.gulp(msg.sender);
   }
 
   /**
@@ -70,17 +68,17 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
       TransferHelper.safeTransferETH(from, wethAmount);
     } else {
       ERC20 outputToken = wrapper.token();
-      uint256 outputAmount = executeSwap(address(unwrappedInput), address(outputToken), unwrappedBalance, address(this));
+      uint256 outputAmount = executeSwap(address(unwrappedInput), address(outputToken), unwrappedBalance, address(wrapper));
 
       if (outputAmount == 0) {
         address wethOutPair = uniswapFactory.getPair(weth, address(outputToken));
         uint256 wethAmount = executeSwap(address(unwrappedInput), weth, unwrappedBalance, wethOutPair);
-        outputAmount = executeSwap(weth, address(outputToken), wethAmount, 0, address(this));
+        outputAmount = executeSwap(weth, address(outputToken), wethAmount, 0, address(wrapper));
       }
 
       require(outputAmount > 0, "NO_PAIR");
 
-      wrapAndReturn(from, outputAmount);
+      wrapper.gulp(from);
     }
   }
 
@@ -148,11 +146,5 @@ contract UniswapAdapter is Receiver, InfiniteApprove {
     uint numerator = amountInWithFee.mul(reserveOut);
     uint denominator = reserveIn.mul(1000).add(amountInWithFee);
     amountOut = numerator / denominator;
-  }
-
-
-  function wrapAndReturn(address recipient, uint256 amount) private {
-    infiniteApprove(wrapper.token(), address(wrapper), amount);
-    wrapper.wrapTo(amount, recipient);
   }
 }
