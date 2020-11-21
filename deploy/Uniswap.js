@@ -2,6 +2,11 @@ const uniswapRouter = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 
 const uniswapContracts = {
   '1': {
+    tokens: [
+      '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', // Dai
+      '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd', // MKR
+      '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
+    ],
     pools: [
       '0xbb2b8038a1640196fbe3e38816f3e67cba72d940', // WBTC-ETH
       '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11', // DAI-ETH

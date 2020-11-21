@@ -1,6 +1,6 @@
 const aaveContracts = {
-  '1': {
-  },
+  // '1': {
+  // },
   '42': {
     addressProvider: '0xbF3f2372E6073FCf31d16212A471b36cDb8D6071',
     weth: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
