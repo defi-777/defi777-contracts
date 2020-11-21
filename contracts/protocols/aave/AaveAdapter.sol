@@ -35,12 +35,11 @@ contract AaveAdapter is Receiver, InfiniteApprove, Ownable {
   }
 
   function setWrappedAToken(address wrappedToken, address wrappedAToken) public onlyOwner {
+    wrappedATokenToWrapper[wrappedAToken] = wrappedToken;
     if (wrappedToken == address(weth)) {
       tokenToWrappedAToken[address(weth)] = wrappedAToken;
-      wrappedATokenToWrapper[wrappedAToken] = address(weth);
     } else {
       tokenToWrappedAToken[address(IWrapped777(wrappedToken).token())] = wrappedAToken;
-      wrappedATokenToWrapper[wrappedAToken] = wrappedToken;
     }
   }
 
