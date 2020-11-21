@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "../../farming/IFarmerToken.sol";
 import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
@@ -12,7 +13,7 @@ import "./interfaces/BPool.sol";
 import "./IBalancerPoolFactory.sol";
 
 
-contract BalancerPoolExit is Receiver, InfiniteApprove {
+contract BalancerPoolExit is Receiver {
   IWrapped777 public immutable token;
   ERC20 public immutable innerToken;
 
@@ -26,7 +27,6 @@ contract BalancerPoolExit is Receiver, InfiniteApprove {
       _innerToken = ERC20(IBalancerPoolFactory(msg.sender).weth());
     } else {
       _innerToken = ERC20(_token.token());
-      infiniteApprove(_innerToken, address(_token), 1);
     }
 
     token = _token;
@@ -50,11 +50,10 @@ contract BalancerPoolExit is Receiver, InfiniteApprove {
 
     if (address(token) == address(0)) {
       IWETH(address(innerToken)).withdraw(exitAmount);
-      (bool success,) = payable(from).call{value: exitAmount}("");
-      require(success);
+      TransferHelper.safeTransferETH(from, exitAmount);
     } else {
-      infiniteApprove(innerToken, address(token), exitAmount);
-      token.wrapTo(exitAmount, from);
+      innerToken.transfer(address(token), exitAmount);
+      token.gulp(from);
     }
   }
 

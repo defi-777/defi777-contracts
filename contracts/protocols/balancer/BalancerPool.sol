@@ -1,19 +1,19 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../Receiver.sol";
+import "../../InfiniteApprove.sol";
 import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "./interfaces/BPool.sol";
 import "./IBalancerPoolFactory.sol";
 
-contract BalancerPool is Receiver {
+contract BalancerPool is Receiver, InfiniteApprove {
   IWrapped777 public immutable token;
   BPool public immutable pool;
   IWETH private immutable weth;
-
-  uint256 private constant INFINITY = uint256(-1);
 
   constructor() public {
     IWrapped777 _token = IWrapped777(IWrapperFactory(msg.sender).nextToken());
@@ -21,8 +21,6 @@ contract BalancerPool is Receiver {
     BPool _pool = BPool(address(_token.token()));
     token = _token;
     pool = _pool;
-
-    infiniteApprove(ERC20(address(_pool)), address(_token), 1);
   }
 
   receive() external payable {
@@ -43,13 +41,7 @@ contract BalancerPool is Receiver {
     infiniteApprove(tokenIn, address(pool), amount);
     uint256 poolTokens = pool.joinswapExternAmountIn(address(tokenIn), amount, 0);
     
-    infiniteApprove(ERC20(address(pool)), address(token), poolTokens);
-    token.wrapTo(poolTokens, recipient);
-  }
-
-  function infiniteApprove(ERC20 _token, address spender, uint256 amount) private {
-    if (_token.allowance(address(this), spender) < amount) {
-      _token.approve(spender, INFINITY);
-    }
+    ERC20(address(pool)).transfer(address(token), poolTokens);
+    token.gulp(recipient);
   }
 }
