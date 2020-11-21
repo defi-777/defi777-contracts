@@ -42,10 +42,14 @@ const func = async function ({ deployments, getNamedAccounts, getChainId }) {
   const setWrappedAToken = async (token, aToken) => {
     const wrappedToken = token === weth ? weth : await read('WrapperFactory', 'calculateWrapperAddress', token);
     const wrappedAToken = await read('WrapperFactory', 'calculateWrapperAddress', aToken);
-    await ensureWrapper(token, wrappedToken);
-    await ensureWrapper(aToken, wrappedAToken);
 
-    await execute('AaveAdapter', {from: deployer}, 'setWrappedAToken', wrappedToken, wrappedAToken);
+    const current = await read('AaveAdapter', 'wrappedATokenToWrapper', wrappedAToken);
+    if (current.toLowerCase() !== wrappedToken.toLowerCase()) {
+      await ensureWrapper(token, wrappedToken);
+      await ensureWrapper(aToken, wrappedAToken);
+
+      await execute('AaveAdapter', {from: deployer}, 'setWrappedAToken', wrappedToken, wrappedAToken);
+    }
   }
 
   if (aWeth) {

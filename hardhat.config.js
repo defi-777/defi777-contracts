@@ -3,6 +3,11 @@ require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-deploy");
 
+task("deployments", "Prints all deployment addresses", async function(_, { deployments }) {
+  Object.entries(await deployments.all()).map(([name, metadata]) => {
+    console.log(`${name}: ${metadata.address} (${metadata.transactionHash} : ${metadata.receipt.blockNumber})`)
+  });
+});
 
 module.exports = {
   networks: {
@@ -16,6 +21,7 @@ module.exports = {
       accounts: {
         mnemonic: process.env.MNEMONIC,
       },
+      gasPrice: 1000000000,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
