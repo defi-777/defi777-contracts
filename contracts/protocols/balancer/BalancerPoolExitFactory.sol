@@ -16,7 +16,7 @@ contract BalancerPoolExitFactory is IWrapperFactory {
 
   event AdapterCreated(address wrapper);
 
-  function calculateWrapperAddress(address wrapper) public view returns (address calculatedAddress) {
+  function calculateAdapterAddress(address wrapper) public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
       byte(0xff),
       address(this),
@@ -25,7 +25,7 @@ contract BalancerPoolExitFactory is IWrapperFactory {
     ))));
   }
 
-  function createWrapper(address wrapper) public {
+  function createAdapter(address wrapper) public {
     _nextToken = wrapper;
     new BalancerPoolExit{salt: bytes32(uint(wrapper))}();
     _nextToken = address(0);
@@ -33,11 +33,11 @@ contract BalancerPoolExitFactory is IWrapperFactory {
     emit AdapterCreated(wrapper);
   }
 
-  function getWrapperAddress(address wrapper) public returns (address wrapperAddress) {
-    wrapperAddress = calculateWrapperAddress(wrapper);
+  function getAdapterAddress(address wrapper) public returns (address wrapperAddress) {
+    wrapperAddress = calculateAdapterAddress(wrapper);
 
     if(!wrapperAddress.isContract()) {
-      createWrapper(wrapper);
+      createAdapter(wrapper);
       assert(wrapperAddress.isContract());
     }
   }

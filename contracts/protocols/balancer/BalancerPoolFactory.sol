@@ -14,36 +14,36 @@ contract BalancerPoolFactory is IBalancerPoolFactory {
   address private _nextToken;
   address private immutable _weth;
 
-  bytes32 public constant WRAPPER_BYTECODE_HASH = keccak256(type(BalancerPool).creationCode);
+  bytes32 public constant ADAPTER_BYTECODE_HASH = keccak256(type(BalancerPool).creationCode);
 
-  event WrapperCreated(address pool);
+  event AdapterCreated(address pool);
 
   constructor(address __weth) public {
     _weth = __weth;
   }
 
-  function calculateWrapperAddress(address pool) public view returns (address calculatedAddress) {
+  function calculateAdapterAddress(address pool) public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
       byte(0xff),
       address(this),
       bytes32(uint(pool)),
-      WRAPPER_BYTECODE_HASH
+      ADAPTER_BYTECODE_HASH
     ))));
   }
 
-  function createWrapper(address pool) public {
+  function createAdapter(address pool) public {
     _nextToken = pool;
     new BalancerPool{salt: bytes32(uint(pool))}();
     _nextToken = address(0);
 
-    emit WrapperCreated(pool);
+    emit AdapterCreated(pool);
   }
 
-  function getWrapperAddress(address pool) public returns (address wrapperAddress) {
-    wrapperAddress = calculateWrapperAddress(pool);
+  function getAdapterAddress(address pool) public returns (address wrapperAddress) {
+    wrapperAddress = calculateAdapterAddress(pool);
 
     if(!wrapperAddress.isContract()) {
-      createWrapper(pool);
+      createAdapter(pool);
       assert(wrapperAddress.isContract());
     }
   }

@@ -41,8 +41,8 @@ group('Balancer Pools', (accounts) => {
     const poolWrapperAddress = await wrapperFactory.calculateWrapperAddress(bpool.address);
     const poolWrapper = await Wrapped777.at(poolWrapperAddress);
 
-    await poolFactory.createWrapper(poolWrapperAddress);
-    const poolAdapter = await BalancerPool.at(await poolFactory.calculateWrapperAddress(poolWrapperAddress));
+    await poolFactory.createAdapter(poolWrapperAddress);
+    const poolAdapter = await BalancerPool.at(await poolFactory.calculateAdapterAddress(poolWrapperAddress));
 
     await poolAdapter.sendTransaction({ value: eth(1), from: user });
 
@@ -77,8 +77,8 @@ group('Balancer Pools', (accounts) => {
     (await IERC20.at(dai)).approve(daiWrapperAddress, eth(1));
     await daiWrapper.wrapTo(eth(1), user);
 
-    await poolFactory.createWrapper(poolWrapperAddress);
-    const poolAdapterAddress = await poolFactory.calculateWrapperAddress(poolWrapperAddress);
+    await poolFactory.createAdapter(poolWrapperAddress);
+    const poolAdapterAddress = await poolFactory.calculateAdapterAddress(poolWrapperAddress);
 
     await daiWrapper.transfer(poolAdapterAddress, eth(1), { from: user });
 
@@ -87,8 +87,8 @@ group('Balancer Pools', (accounts) => {
     // Exit
     const exitFactory = await BalancerPoolExitFactory.new();
 
-    await exitFactory.createWrapper(daiWrapperAddress);
-    const exitAdapter = await exitFactory.calculateWrapperAddress(daiWrapperAddress);
+    await exitFactory.createAdapter(daiWrapperAddress);
+    const exitAdapter = await exitFactory.calculateAdapterAddress(daiWrapperAddress);
 
     await poolWrapper.transfer(exitAdapter, eth(1), { from: user });
     expect(await str(daiWrapper.balanceOf(user))).to.equal(eth(1));
@@ -111,8 +111,8 @@ group('Balancer Pools', (accounts) => {
     const poolWrapperAddress = await farmerFactory.calculateWrapperAddress(bpool.address, [daiWrapper.address]);
     const poolWrapper = await FarmerToken.at(poolWrapperAddress);
 
-    await poolFactory.createWrapper(poolWrapperAddress);
-    const poolAdapter = await BalancerPool.at(await poolFactory.calculateWrapperAddress(poolWrapperAddress));
+    await poolFactory.createAdapter(poolWrapperAddress);
+    const poolAdapter = await BalancerPool.at(await poolFactory.calculateAdapterAddress(poolWrapperAddress));
 
     await poolAdapter.sendTransaction({ value: eth(1), from: user });
 
