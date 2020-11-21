@@ -2,27 +2,28 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "../../Receiver.sol";
 import "../../farming/IFarmerToken.sol";
-import "../../tokens/IWrapperFactory.sol";
-import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
+import "../../tokens/IWrapped777.sol";
+import "../../Receiver.sol";
 import "./interfaces/BPool.sol";
 
+contract BalancerPoolETHExitAdapter is Receiver {
+  using SafeMath for uint256;
 
-contract BalancerPoolExit is Receiver {
-  IWrapped777 public immutable token;
-  ERC20 public immutable innerToken;
+  IWETH public immutable weth;
 
   IERC1820Registry constant internal _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
-  constructor() public {
-    IWrapped777 _token = IWrapped777(IWrapperFactory(msg.sender).nextToken());
+  constructor(IWETH _weth) public {
+    weth = _weth;
+  }
 
-    innerToken = ERC20(_token.token());
-    token = _token;
+  receive() external payable {
+    require(msg.sender == address(weth));
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
@@ -36,10 +37,10 @@ contract BalancerPoolExit is Receiver {
 
     uint256 poolTokens = inputWrapper.unwrap(amount);
 
-    uint256 exitAmount = pool.exitswapPoolAmountIn(address(innerToken), poolTokens, 0);
+    uint256 exitAmount = pool.exitswapPoolAmountIn(address(weth), poolTokens, 0);
 
-    innerToken.transfer(address(token), exitAmount);
-    token.gulp(from);
+    weth.withdraw(exitAmount);
+    TransferHelper.safeTransferETH(from, exitAmount);
   }
 
   function farmRewards(IFarmerToken _token, address recipient) private {

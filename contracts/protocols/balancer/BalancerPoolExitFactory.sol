@@ -4,23 +4,17 @@ pragma solidity >=0.6.3 <0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "../../tokens/IWrapperFactory.sol";
 import "./BalancerPoolExit.sol";
-import "./IBalancerPoolFactory.sol";
 
-
-contract BalancerPoolExitFactory is IBalancerPoolFactory {
+contract BalancerPoolExitFactory is IWrapperFactory {
   using Address for address;
 
   address private _nextToken;
-  address private immutable _weth;
 
   bytes32 public constant ADAPTER_BYTECODE_HASH = keccak256(type(BalancerPoolExit).creationCode);
 
   event AdapterCreated(address wrapper);
-
-  constructor(address __weth) public {
-    _weth = __weth;
-  }
 
   function calculateWrapperAddress(address wrapper) public view returns (address calculatedAddress) {
     calculatedAddress = address(uint(keccak256(abi.encodePacked(
@@ -50,9 +44,5 @@ contract BalancerPoolExitFactory is IBalancerPoolFactory {
 
   function nextToken() external override view returns (address) {
     return _nextToken;
-  }
-
-  function weth() external override view returns (address) {
-    return _weth;
   }
 }
