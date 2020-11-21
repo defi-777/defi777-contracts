@@ -43,9 +43,8 @@ contract CurveExitAdapter is Receiver {
 
     removeLiquidity(pool, id, poolTokens);
 
-    uint256 wrapAmount = innerToken.balanceOf(address(this));
-    infiniteApprove(innerToken, address(token), wrapAmount);
-    token.wrapTo(wrapAmount, from);
+    innerToken.transfer(address(token), innerToken.balanceOf(address(this)));
+    token.gulp(from);
   }
 
   function farmRewards(IFarmerToken _token, address recipient) private {
@@ -67,12 +66,6 @@ contract CurveExitAdapter is Receiver {
         twoTokens[uint256(id)] = amount;
         pool.remove_liquidity_imbalance(twoTokens, 0);
       }
-    }
-  }
-
-  function infiniteApprove(ERC20 _token, address spender, uint256 amount) private {
-    if (_token.allowance(address(this), spender) < amount) {
-      _token.approve(spender, INFINITY);
     }
   }
 }

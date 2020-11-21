@@ -4,16 +4,15 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
+import "../../InfiniteApprove.sol";
 import "./interfaces/ICurvePool.sol";
 
-contract CurveAdapter is Receiver {
+contract CurveAdapter is Receiver, InfiniteApprove {
   mapping(address => int128) private tokenID;
 
   IWrapped777 public immutable wrapper;
   ICurvePool public immutable pool;
   int128 private immutable numTokens;
-
-  uint256 private constant INFINITY = uint256(-1);
 
   constructor(IWrapped777 _wrapper, int128 _numTokens) public {
     ICurvePool _pool = ICurvePool(address(_wrapper.token()));
@@ -24,8 +23,6 @@ contract CurveAdapter is Receiver {
     for (int128 i; i < _numTokens; i++) {
       tokenID[_pool.coins(i)] = i + 1;
     }
-
-    infiniteApprove(ERC20(address(_pool)), address(_wrapper), 1);
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
@@ -44,7 +41,8 @@ contract CurveAdapter is Receiver {
     addLiquidity(id, unwrappedAmount);
 
     uint256 newTokens = ERC20(address(pool)).balanceOf(address(this));
-    wrapper.wrapTo(newTokens, from);
+    ERC20(address(pool)).transfer(address(wrapper), newTokens);
+    wrapper.gulp(from);
   }
 
   function addLiquidity(int128 id, uint256 amount) private {
@@ -62,12 +60,6 @@ contract CurveAdapter is Receiver {
       pool.add_liquidity(twoTokens, 0);
     } else {
       revert();
-    }
-  }
-
-  function infiniteApprove(ERC20 _token, address spender, uint256 amount) private {
-    if (_token.allowance(address(this), spender) < amount) {
-      _token.approve(spender, INFINITY);
     }
   }
 }

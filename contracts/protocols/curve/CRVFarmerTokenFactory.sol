@@ -7,7 +7,7 @@ import "./CRVFarmerToken.sol";
 import "./ICRVFarmerFactory.sol";
 
 
-contract CRVFarmerFactory is ICRVFarmerFactory {
+contract CRVFarmerTokenFactory is ICRVFarmerFactory {
   using Address for address;
 
   address private _nextToken;
@@ -15,7 +15,7 @@ contract CRVFarmerFactory is ICRVFarmerFactory {
   address private immutable _crvWrapper;
   address private immutable _adapterFactory;
 
-  bytes32 public constant ADAPTER_BYTECODE_HASH = keccak256(type(CRVFarmerToken).creationCode);
+  bytes32 public constant WRAPPER_BYTECODE_HASH = keccak256(type(CRVFarmerToken).creationCode);
 
   event WrapperCreated(address indexed token, address gague);
 
@@ -29,7 +29,7 @@ contract CRVFarmerFactory is ICRVFarmerFactory {
       byte(0xff),
       address(this),
       keccak256(abi.encodePacked(token, gague)),
-      ADAPTER_BYTECODE_HASH
+      WRAPPER_BYTECODE_HASH
     ))));
   }
 

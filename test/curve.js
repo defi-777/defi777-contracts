@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 const CurveAdapter = getContract('CurveAdapter');
 const CurveExitAdapter = getContract('CurveExitAdapter');
-const CRVFarmerFactory = getContract('CRVFarmerFactory');
+const CRVFarmerTokenFactory = getContract('CRVFarmerTokenFactory');
 const CRVFarmerToken = getContract('CRVFarmerToken');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
@@ -69,7 +69,7 @@ group('Curve pools', (accounts) => {
     await wrapperFactory.createWrapper(crv);
     const crvWrapperAddress = await wrapperFactory.calculateWrapperAddress(crv);
     const crvWrapper = await Wrapped777.at(crvWrapperAddress);
-    const farmerFactory = await CRVFarmerFactory.new(crvWrapperAddress, adapterFactory.address);
+    const farmerFactory = await CRVFarmerTokenFactory.new(crvWrapperAddress, adapterFactory.address);
 
     await wrapperFactory.createWrapper(token1.address);
     const token1WrapperAddress = await wrapperFactory.calculateWrapperAddress(token1.address);
