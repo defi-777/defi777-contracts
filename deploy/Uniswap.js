@@ -3,8 +3,8 @@ const uniswapRouter = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 const uniswapContracts = {
   '1': {
     tokens: [
-      '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', // Dai
-      '0xaaf64bfcc32d0f15873a02163e7e500671a4ffcd', // MKR
+      '0x6b175474e89094c44da98b954eedeac495271d0f', // Dai
+      '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', // MKR
       '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
     ],
     pools: [
