@@ -3,7 +3,6 @@ const { singletons } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const YVaultAdapter = getContract('YVaultAdapter');
-const YVaultAdapterFactory = getContract('YVaultAdapterFactory');
 const WrapperFactory = getContract('WrapperFactory');
 const Wrapped777 = getContract('Wrapped777');
 const TestYVault = getContract('TestYVault');
@@ -33,16 +32,15 @@ group('yEarn', (accounts) => {
     await tokenWrapper.wrapTo(eth(1), user);
 
     const weth = await WETH.new();
-    const adapterFactory = await YVaultAdapterFactory.new(weth.address);
-    await adapterFactory.createAdapter(vaultWrapper.address, tokenWrapper.address);
-    const adapterAddress = await adapterFactory.calculateAdapterAddress(vaultWrapper.address, tokenWrapper.address);
+    const adapter = await YVaultAdapter.new(weth.address, defaultSender);
+    await adapter.setWrappedVault(tokenWrapper.address, vaultWrapper.address);
 
-    await tokenWrapper.transfer(adapterAddress, eth(1), { from: user });
+    await tokenWrapper.transfer(adapter.address, eth(1), { from: user });
 
     expect(await str(vaultWrapper.balanceOf(user))).to.equal(eth(1));
 
     // Exit
-    await vaultWrapper.transfer(adapterAddress, eth(1), { from: user });
+    await vaultWrapper.transfer(adapter.address, eth(1), { from: user });
     expect(await str(tokenWrapper.balanceOf(user))).to.equal(eth(1));
   });
 
@@ -56,17 +54,16 @@ group('yEarn', (accounts) => {
     const factory = await getWrapperFactory();
     const vaultWrapper = await factory.getWrapper(vault.address);
 
-    const adapterFactory = await YVaultAdapterFactory.new(weth.address);
-    await adapterFactory.createAdapter(vaultWrapper.address, ZERO);
-    const adapterAddress = await adapterFactory.calculateAdapterAddress(vaultWrapper.address, ZERO);
+    const adapter = await YVaultAdapter.new(weth.address, defaultSender);
+    await adapter.setWrappedVault(weth.address, vaultWrapper.address);
 
-    await web3.eth.sendTransaction({ to: adapterAddress, from: user, value: eth('0.1'), gas: '1000000' });
+    await web3.eth.sendTransaction({ to: adapter.address, from: user, value: eth('0.1'), gas: '1000000' });
 
     expect(await str(vaultWrapper.balanceOf(user))).to.equal(eth('0.1'));
 
     // Exit
     const startingBalance = await web3.eth.getBalance(user);
-    const { receipt } = await vaultWrapper.transfer(adapterAddress, eth('0.1'), { from: user, gasPrice: ONE_GWEI });
+    const { receipt } = await vaultWrapper.transfer(adapter.address, eth('0.1'), { from: user, gasPrice: ONE_GWEI });
 
     const ethSpentOnGas = ONE_GWEI * receipt.gasUsed;
     expect(await web3.eth.getBalance(user))
