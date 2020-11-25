@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GNU
 pragma solidity >=0.6.2;
 
 import './IUniswapV2Factory.sol';

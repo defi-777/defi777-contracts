@@ -1,17 +1,17 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "../../interfaces/IWETH.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./IUniswapAdapterFactory.sol";
 
 
-contract UniswapPoolAdapter is Receiver, InfiniteApprove {
+contract UniswapPoolAdapter is Receiver {
   using SafeMath for uint256;
 
   Wrapped777 public immutable wrapper;
@@ -72,7 +72,9 @@ contract UniswapPoolAdapter is Receiver, InfiniteApprove {
       : (outputAmount, keepAmount);
 
     uint256 poolTokens = addLiquidity(amount0, amount1);
-    wrapAndReturn(recipient, poolTokens);
+
+    pool.transfer(address(wrapper), poolTokens);
+    wrapper.gulp(recipient);
   }
 
   function swapHalf(address input, uint256 amount) private returns (uint256 outputAmount, uint256 keepAmount) {
@@ -96,11 +98,6 @@ contract UniswapPoolAdapter is Receiver, InfiniteApprove {
     token0.transfer(address(pool), amount0);
     token1.transfer(address(pool), amount1);
     poolTokens = pool.mint(address(this));
-  }
-
-  function wrapAndReturn(address recipient, uint256 amount) private {
-    infiniteApprove(wrapper.token(), address(wrapper), amount);
-    wrapper.wrapTo(amount, recipient);
   }
 
   function calculateSwapInAmount(uint256 reserveIn, uint256 userIn) public pure returns (uint256 amount) {
