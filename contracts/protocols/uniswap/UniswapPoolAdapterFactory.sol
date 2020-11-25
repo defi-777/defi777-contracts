@@ -14,7 +14,7 @@ contract UniswapPoolAdapterFactory is Receiver, IUniswapAdapterFactory {
   address private _nextToken;
   address private immutable _router;
 
-  event PoolCreated(address poolWrapper);
+  event AdapterCreated(address poolWrapper);
 
   constructor(address __router) public {
     _router = __router;
@@ -34,7 +34,7 @@ contract UniswapPoolAdapterFactory is Receiver, IUniswapAdapterFactory {
     new UniswapPoolAdapter{salt: bytes32(uint(poolWrapper))}();
     _nextToken = address(0);
 
-    emit PoolCreated(poolWrapper);
+    emit AdapterCreated(poolWrapper);
   }
 
   function getAdapterAddress(address poolWrapper) public returns (address wrapperAddress) {
