@@ -28,14 +28,18 @@ group('Wrapped777', (accounts) => {
     const wrapperAddress = await factory.calculateWrapperAddress(token.address);
     const wrapper = await Wrapped777.at(wrapperAddress);
 
-    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('100', 'ether'));
+    expect(await wrapper.token()).to.equal(token.address);
+    expect(await wrapper.underlyingTokens()).to.deep.equal([token.address]);
+    expect(await str(token.balanceOf(defaultSender))).to.equal(eth(10000));
     expect(await str(wrapper.balanceOf(defaultSender))).to.equal('0');
+    expect(await str(wrapper.balanceOfUnderlying(defaultSender, token.address))).to.equal('0');
 
     await token.approve(wrapperAddress, toWei('10', 'ether'));
     await wrapper.wrap(toWei('10', 'ether'));
 
-    expect(await str(token.balanceOf(defaultSender))).to.equal(toWei('90', 'ether'));
-    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(toWei('10', 'ether'));
+    expect(await str(token.balanceOf(defaultSender))).to.equal(eth(9990));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(eth(10));
+    expect(await str(wrapper.balanceOfUnderlying(defaultSender, token.address))).to.equal(eth(10));
 
     await wrapper.transfer(user, toWei('10', 'ether'));
     await wrapper.transfer(wrapper.address, toWei('10', 'ether'), { from: user });
@@ -94,7 +98,8 @@ group('Wrapped777', (accounts) => {
     await wrapper.wrap('10000000');
 
     expect(await str(token.balanceOf(defaultSender))).to.equal('90000000');
-    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(toWei('10', 'ether'));
+    expect(await str(wrapper.balanceOf(defaultSender))).to.equal(eth(10));
+    expect(await str(wrapper.balanceOfUnderlying(defaultSender, token.address))).to.equal('10000000');
 
     await wrapper.transfer(user, toWei('10', 'ether'));
     await wrapper.transfer(wrapper.address, toWei('10', 'ether'), { from: user });
@@ -148,7 +153,7 @@ group('Wrapped777', (accounts) => {
     await expectRevert(fakeToken.callReceiveHook(wrapperAddress), 'NO-UPGRADE');
   });
 
-  it('Should issue flash loans', async () => {
+  it('Should issue flash mints', async () => {
     const token = await TestERC20.new();
     const factory = await WrapperFactory.new();
 

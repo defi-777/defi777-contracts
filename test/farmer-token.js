@@ -31,6 +31,7 @@ group('Farmer Token', (accounts) => {
     const wrapperAddress = await factory.calculateWrapperAddress(token.address, [rewardWrapperAddress]);
     const farmerToken = await FarmerToken.at(wrapperAddress);
     expect(await farmerToken.rewardTokens()).to.deep.equal([reward1.address]);
+    expect(await farmerToken.underlyingTokens()).to.deep.equal([token.address, reward1.address]);
 
     await token.transfer(user1, eth(2), { from: admin });
     await token.approve(wrapperAddress, eth(10), { from: user1 });
@@ -48,6 +49,7 @@ group('Farmer Token', (accounts) => {
     await farmerToken.harvest(reward1.address);
     expect(await str(farmerToken.rewardBalance(reward1.address, user1))).to.equal(eth('4'));
     expect(await str(farmerToken.rewardBalance(reward1.address, user2))).to.equal(eth('6'));
+    expect(await str(farmerToken.balanceOfUnderlying(user1, reward1.address))).to.equal(eth(4));
 
     await farmerToken.withdraw(reward1.address, eth(2), { from: user2 });
     expect(await str(reward1.balanceOf(user2))).to.equal(eth(2));

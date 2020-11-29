@@ -6,13 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/IERC777Recipient.sol";
 import "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "../interfaces/IERC3126.sol";
 import "../Receiver.sol";
 import "./ERC777WithGranularity.sol";
 import "./IWrapperFactory.sol";
 import "./IWrapped777.sol";
 import "./IPermit.sol";
 
-contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
+contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
   using SafeMath for uint256;
 
   string public constant WRAPPER_VERSION = "0.2.0";
@@ -47,6 +48,16 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777 {
         address(this)
       )
     );
+  }
+
+  function underlyingTokens() external view virtual override returns (address[] memory) {
+    address[] memory tokens = new address[](1);
+    tokens[0] = address(token);
+    return tokens;
+  }
+
+  function balanceOfUnderlying(address _user, address _token) external view virtual override returns (uint256) {
+    return _token == address(token) ? from777to20(ERC777WithGranularity.balanceOf(_user)) : 0;
   }
 
   function totalSupply() public view override(ERC777WithGranularity, IERC777) returns (uint256) {

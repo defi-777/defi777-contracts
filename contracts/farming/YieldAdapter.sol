@@ -10,13 +10,13 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@uniswap/lib/contracts/libraries/SafeERC20Namer.sol";
+import "../interfaces/IERC3126.sol";
 import "../tokens/Granularity.sol";
 import "../tokens/IWrapped777.sol";
-import "../InfiniteApprove.sol";
 import "./IFarmerToken.sol";
 import "./IYieldAdapterFactory.sol";
 
-contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove {
+contract YieldAdapter is Context, IERC777, IERC20, Granularity, IERC3126 {
   using SafeMath for uint256;
   using Address for address;
 
@@ -93,11 +93,21 @@ contract YieldAdapter is Context, IERC777, IERC20, Granularity, InfiniteApprove 
    * @dev See {IERC777-totalSupply}.
    */
   function totalSupply() public view override(IERC20, IERC777) virtual returns (uint256) {
-    return IERC20(token).balanceOf(address(farmer));
+    return from20to777(IERC20(token).balanceOf(address(farmer)));
   }
 
   function balanceOf(address account) external view override(IERC20, IERC777) virtual returns (uint256) {
-    return farmer.rewardBalance(token, account);
+    return from20to777(farmer.rewardBalance(token, account));
+  }
+
+  function underlyingTokens() external view override returns (address[] memory) {
+    address[] memory tokens = new address[](1);
+    tokens[0] = address(token);
+    return tokens;
+  }
+
+  function balanceOfUnderlying(address _user, address _token) external view override returns (uint256) {
+    return _token == address(token) ? farmer.rewardBalance(_token, _user) : 0;
   }
 
   /**

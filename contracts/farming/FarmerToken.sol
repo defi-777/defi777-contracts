@@ -56,6 +56,21 @@ contract FarmerToken is Wrapped777, IFarmerToken {
     return _rewardTokens;
   }
 
+  function underlyingTokens() external view override returns (address[] memory) {
+    address[] memory tokens = new address[](_rewardTokens.length + 1);
+    tokens[0] = address(token);
+    for (uint8 i = 0; i < _rewardTokens.length; i++) {
+      tokens[i + 1] = _rewardTokens[i];
+    }
+    return tokens;
+  }
+
+  function balanceOfUnderlying(address _user, address _token) external view override returns (uint256) {
+    return _token == address(token)
+      ? from777to20(ERC777WithGranularity.balanceOf(_user))
+      : scaledRewardBalance(_token, _user).div(SCALE);
+  }
+
   /**
    * @return List of ERC777 wrappers for the reward tokens
    */
