@@ -13,7 +13,7 @@ const aaveContracts = {
 const func = async function ({ deployments, getNamedAccounts, getChainId }) {
   const chainId = await getChainId();
   if (!aaveContracts[chainId]) {
-    console.log(`Aave not deployed on chain ${chainId}, skipping`);
+    console.log(`yEarn not deployed on chain ${chainId}, skipping`);
     return
   }
   const { weth, vaults } = aaveContracts[chainId];
