@@ -15,8 +15,6 @@ contract CurveExitAdapter is Receiver, ReverseENS {
   IWrapped777 public immutable token;
   ERC20 public immutable innerToken;
 
-  uint256 private constant INFINITY = uint256(-1);
-
   IERC1820Registry constant internal _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
   constructor(IWrapped777 _wrapper) public {
