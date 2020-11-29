@@ -2,9 +2,9 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../../ens/ReverseENS.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
-import "../../ReverseENS.sol";
 import "../../InfiniteApprove.sol";
 import "./interfaces/ICurvePool.sol";
 

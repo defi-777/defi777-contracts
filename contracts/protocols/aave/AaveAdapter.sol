@@ -3,11 +3,11 @@ pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "../../Receiver.sol";
-import "../../ReverseENS.sol";
-import "../../InfiniteApprove.sol";
+import "../../ens/ReverseENS.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
+import "../../Receiver.sol";
+import "../../InfiniteApprove.sol";
 import "./interfaces/ILendingPoolAddressesProvider.sol";
 import "./interfaces/ILendingPool.sol";
 

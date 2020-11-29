@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/introspection/IERC1820Registry.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "../../ens/ReverseENS.sol";
 import "../../farming/IFarmerToken.sol";
 import "../../interfaces/IWETH.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
-import "../../ReverseENS.sol";
 import "./interfaces/BPool.sol";
 
 contract BalancerPoolETHExitAdapter is Receiver, ReverseENS {

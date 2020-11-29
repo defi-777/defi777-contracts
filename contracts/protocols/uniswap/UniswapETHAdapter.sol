@@ -4,10 +4,10 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
+import "../../ens/ReverseENS.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
-import "../../ReverseENS.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 
