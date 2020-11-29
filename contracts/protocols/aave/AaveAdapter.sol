@@ -4,13 +4,14 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../Receiver.sol";
+import "../../ReverseENS.sol";
 import "../../InfiniteApprove.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "./interfaces/ILendingPoolAddressesProvider.sol";
 import "./interfaces/ILendingPool.sol";
 
-contract AaveAdapter is Receiver, InfiniteApprove, Ownable {
+contract AaveAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
   ILendingPoolAddressesProvider public immutable addressProvider;
 
   mapping(address => address) public wrappedATokenToWrapper;

@@ -9,9 +9,10 @@ import "../../farming/IFarmerToken.sol";
 import "../../interfaces/IWETH.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
+import "../../ReverseENS.sol";
 import "./interfaces/BPool.sol";
 
-contract BalancerPoolETHExitAdapter is Receiver {
+contract BalancerPoolETHExitAdapter is Receiver, ReverseENS {
   using SafeMath for uint256;
 
   IWETH public immutable weth;

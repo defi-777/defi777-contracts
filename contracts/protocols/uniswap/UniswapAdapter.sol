@@ -5,13 +5,14 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 import "../../tokens/Wrapped777.sol";
-import "../../Receiver.sol";
 import "../../interfaces/IWETH.sol";
+import "../../Receiver.sol";
+import "../../ReverseENS.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./IUniswapAdapterFactory.sol";
 
-contract UniswapAdapter is Receiver {
+contract UniswapAdapter is Receiver, ReverseENS {
   using SafeMath for uint256;
 
   Wrapped777 public immutable wrapper;

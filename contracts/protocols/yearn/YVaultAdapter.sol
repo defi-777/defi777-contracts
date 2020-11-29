@@ -4,14 +4,15 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
-import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
+import "../../ReverseENS.sol";
+import "../../Receiver.sol";
+import "../../InfiniteApprove.sol";
 import "./interfaces/IyVault.sol";
 
 
-contract YVaultAdapter is Receiver, InfiniteApprove, Ownable {
+contract YVaultAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
   mapping(address => address) public wrappedVaultToWrapper;
   mapping(address => address) public tokenToWrappedVault;
   IWETH public immutable weth;
