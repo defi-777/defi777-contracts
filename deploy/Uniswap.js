@@ -13,6 +13,16 @@ const uniswapContracts = {
       '0xd3d2e2692501a5c9ca623199d38826e513033a17', // UNI-ETH
     ],
   },
+  '4': {
+    tokens: [
+      '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735', // Dai
+      '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
+    ],
+    pools: [
+      '0x8b22f85d0c844cf793690f6d9dfe9f11ddb35449', // DAI-ETH
+      '0x4e99615101ccbb83a462dc4de2bc1362ef1365e5', // UNI-ETH
+    ],
+  },
   '42': {
     tokens: [
       '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', // Dai

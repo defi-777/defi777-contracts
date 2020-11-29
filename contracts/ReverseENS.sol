@@ -7,6 +7,8 @@ interface IReverseRegistrar {
 
 contract ReverseENS {
   constructor() internal {
-    try IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148).claim(tx.origin) {} catch {}
+    try IReverseRegistrar(0x084b1c3C81545d370f3634392De611CaaBFf8148).claim(tx.origin) {} catch {
+      try IReverseRegistrar(0x6F628b68b30Dc3c17f345c9dbBb1E483c2b7aE5c).claim(tx.origin) {} catch {}
+    }
   }
 }

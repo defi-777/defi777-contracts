@@ -10,6 +10,16 @@ const balancerContracts = {
       '0x7c90a3cd7ec80dd2f633ed562480abbeed3be546', //AAVE-WETH
     ],
   },
+  '4': {
+    weth: '0xc778417e063141139fce010982780140aa0cd5ab',
+    tokens: [
+      '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735', // Dai
+      '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
+    ],
+    pools: [
+      '0x9743C69c4f95daeeAA054E273F48297983FBDe60', // WETH-DAI-UNI
+    ],
+  },
   '42': {
     weth: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
     bal: '0xa332eb80abde13f0073c04a4a9e7522ef8433bbf',

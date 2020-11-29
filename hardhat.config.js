@@ -23,6 +23,13 @@ module.exports = {
       },
       gasPrice: 1000000000,
     },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_KEY}`,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+      },
+      gasPrice: 1000000000,
+    },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
       accounts: {
