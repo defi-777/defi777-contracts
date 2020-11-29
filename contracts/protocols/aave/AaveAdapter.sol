@@ -18,12 +18,12 @@ contract AaveAdapter is Receiver, InfiniteApprove, Ownable {
   IWETH public immutable weth;
   uint16 constant private referralCode = 45;
 
-  constructor(address _addressProvider, IWETH _weth, address firstOwner) public {
+  constructor(address _addressProvider, IWETH _weth) public {
     addressProvider = ILendingPoolAddressesProvider(_addressProvider);
     weth = _weth;
 
     // Needs to be explicitly set since we deploy through a Create2 proxy
-    transferOwnership(firstOwner);
+    transferOwnership(tx.origin);
   }
 
   receive() external payable {

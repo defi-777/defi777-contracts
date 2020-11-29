@@ -26,7 +26,7 @@ const func = async function ({ deployments, getNamedAccounts, getChainId }) {
   const { deployer } = await getNamedAccounts();
 
   const deployment = await deploy("AaveAdapter", {
-    args: [addressProvider, weth, deployer],
+    args: [addressProvider, weth],
     from: deployer,
     deterministicDeployment: true,
   });

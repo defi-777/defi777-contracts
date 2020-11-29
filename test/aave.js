@@ -40,7 +40,7 @@ group('Aave', (accounts) => {
   });
 
   it('should deposit and withdraw Dai from Aave', async function () {
-    const aaveAdapter = await AaveAdapter.new(aaveAddressProvider.address, weth, defaultSender);
+    const aaveAdapter = await AaveAdapter.new(aaveAddressProvider.address, weth);
     await aaveAdapter.setWrappedAToken(dai777.address, aDai777.address);
 
     await dai777.transfer(aaveAdapter.address, eth(1));
@@ -56,7 +56,7 @@ group('Aave', (accounts) => {
   });
 
   it('should deposit and withdraw ETH from Aave using aaveAdapter', async function () {
-    const aaveAdapter = await AaveAdapter.new(aaveAddressProvider.address, weth, defaultSender);
+    const aaveAdapter = await AaveAdapter.new(aaveAddressProvider.address, weth);
     await aaveAdapter.setWrappedAToken(weth, aWeth777.address);
 
     await aaveAdapter.sendTransaction({ value: eth(0.1) });
