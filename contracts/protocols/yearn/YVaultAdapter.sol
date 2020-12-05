@@ -8,11 +8,10 @@ import "../../ens/ReverseENS.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "./interfaces/IyVault.sol";
 
 
-contract YVaultAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
+contract YVaultAdapter is Receiver, Ownable, ReverseENS {
   mapping(address => address) public wrappedVaultToWrapper;
   mapping(address => address) public tokenToWrappedVault;
   IWETH public immutable weth;
@@ -60,7 +59,7 @@ contract YVaultAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
     require(outputWrapper != address(0), 'Unsupported');
     IyVault vault = IyVault(address(IWrapped777(outputWrapper).token()));
 
-    infiniteApprove(token, address(vault), amount);
+    token.approve(address(vault), amount);
     vault.deposit(amount);
 
     vault.transfer(address(outputWrapper), vault.balanceOf(address(this)));

@@ -4,12 +4,11 @@ pragma solidity >=0.6.2 <0.7.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../farming/FarmerToken.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "./interfaces/ICurveGague.sol";
 import "./interfaces/ICurveMinter.sol";
 import "./ICRVFarmerFactory.sol";
 
-contract CRVFarmerToken is FarmerToken, InfiniteApprove {
+contract CRVFarmerToken is FarmerToken {
   ICurveGague private immutable gague;
 
   constructor() public {
@@ -17,7 +16,7 @@ contract CRVFarmerToken is FarmerToken, InfiniteApprove {
   }
 
   function preMint(uint256 amount) internal override {
-    infiniteApprove(token, address(gague), amount);
+    token.approve(address(gague), amount);
     gague.deposit(amount);
   }
 

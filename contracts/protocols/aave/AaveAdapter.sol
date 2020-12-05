@@ -7,11 +7,10 @@ import "../../ens/ReverseENS.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "./interfaces/ILendingPoolAddressesProvider.sol";
 import "./interfaces/ILendingPool.sol";
 
-contract AaveAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
+contract AaveAdapter is Receiver, Ownable, ReverseENS {
   ILendingPoolAddressesProvider public immutable addressProvider;
 
   mapping(address => address) public wrappedATokenToWrapper;
@@ -64,7 +63,7 @@ contract AaveAdapter is Receiver, InfiniteApprove, Ownable, ReverseENS {
     address outputWrapper = tokenToWrappedAToken[address(token)];
     require(outputWrapper != address(0), 'Unsupported');
 
-    infiniteApprove(token, address(_lendingPool), amount);
+    token.approve(address(_lendingPool), amount);
     _lendingPool.deposit(address(token), amount, outputWrapper, referralCode);
     IWrapped777(outputWrapper).gulp(recipient);
   }

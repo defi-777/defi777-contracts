@@ -7,11 +7,10 @@ import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "./interfaces/BPool.sol";
 import "./IBalancerPoolFactory.sol";
 
-contract BalancerPool is Receiver, InfiniteApprove, ReverseENS {
+contract BalancerPool is Receiver, ReverseENS {
   IWrapped777 public immutable token;
   BPool public immutable pool;
   IWETH private immutable weth;
@@ -39,7 +38,7 @@ contract BalancerPool is Receiver, InfiniteApprove, ReverseENS {
   }
 
   function swapInToPool(ERC20 tokenIn, uint256 amount, address recipient) private {
-    infiniteApprove(tokenIn, address(pool), amount);
+    tokenIn.approve(address(pool), amount);
     uint256 poolTokens = pool.joinswapExternAmountIn(address(tokenIn), amount, 0);
     
     ERC20(address(pool)).transfer(address(token), poolTokens);

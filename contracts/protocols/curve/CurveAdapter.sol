@@ -5,10 +5,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../ens/ReverseENS.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
-import "../../InfiniteApprove.sol";
 import "./interfaces/ICurvePool.sol";
 
-contract CurveAdapter is Receiver, InfiniteApprove, ReverseENS {
+contract CurveAdapter is Receiver, ReverseENS {
   mapping(address => int128) private tokenID;
 
   IWrapped777 public immutable wrapper;
@@ -37,8 +36,8 @@ contract CurveAdapter is Receiver, InfiniteApprove, ReverseENS {
     id--;
 
     uint256 unwrappedAmount = inputWrapper.unwrap(amount);
-    infiniteApprove(wrappedToken, address(pool), unwrappedAmount);
 
+    wrappedToken.approve(address(deposit), unwrappedAmount);
     addLiquidity(id, unwrappedAmount);
 
     uint256 newTokens = ERC20(address(pool)).balanceOf(address(this));
