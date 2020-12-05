@@ -162,9 +162,9 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory) internal override {
     if (address(_token) == address(this)) {
-      tryTokenUpgrade(address(_token), from, amount);
-    } else {
       _unwrap(amount, address(this), from);
+    } else {
+      tryTokenUpgrade(address(_token), from, amount);
     }
   }
 
