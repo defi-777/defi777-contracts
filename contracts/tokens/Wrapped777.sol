@@ -76,7 +76,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
    */
   function wrap(uint256 amount) external override returns (uint256) {
     address sender = _msgSender();
-    return _wrap(sender, amount);
+    return _wrap(sender, sender, amount);
   }
 
   /**
@@ -93,14 +93,13 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
       IPermit(address(token)).permit(sender, address(this), nonce, deadline, true /* allowed */, v, r, s);
     }
 
-    return _wrap(sender, value);
+    return _wrap(sender, sender, value);
   }
 
-  function _wrap(address sender, uint256 amount) private returns (uint256 outputAmount) {
+  function _wrap(address sender, address recipient, uint256 amount) private returns (uint256 outputAmount) {
     TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
-    outputAmount = from20to777(amount);
-    _mint(sender, outputAmount, "", "");
+    _gulp(recipient);
   }
 
   /**
@@ -112,10 +111,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
    */
   function wrapTo(uint256 amount, address recipient) external override returns (uint256 outputAmount) {
     address sender = _msgSender();
-    TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
-
-    outputAmount = from20to777(amount);
-    _mint(recipient, outputAmount, "", "");
+    _wrap(sender, recipient, amount);
   }
 
   /**
@@ -126,6 +122,10 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
    * @return amount Amount of wrapper tokens minted (same as the input amount if the token has 18 decimals)
    */
   function gulp(address recipient) external override returns (uint256 amount) {
+    return _gulp(recipient);
+  }
+
+  function _gulp(address recipient) private returns (uint256 amount) {
     amount = from20to777(token.balanceOf(address(this))).sub(ERC777WithGranularity.totalSupply());
     _mint(recipient, amount, "", "");
   }
