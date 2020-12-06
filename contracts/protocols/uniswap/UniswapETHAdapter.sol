@@ -11,16 +11,14 @@ import "../../Receiver.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 
-contract UniswapETHAdapter is Receiver {
+contract UniswapETHAdapter is Receiver, ReverseENS {
   using SafeMath for uint256;
 
-  IUniswapV2Router01 public immutable router;
   IUniswapV2Factory public immutable uniswapFactory;
   address private immutable weth;
 
   constructor(IUniswapV2Router01 _router) public {
     weth = _router.WETH();
-    router = _router;
     uniswapFactory = _router.factory();
   }
 
@@ -91,7 +89,10 @@ contract UniswapETHAdapter is Receiver {
     (address keepToken, address swapToken) = weth == token0
       ? (token0, token1)
       : (token1, token0);
-    require(keepToken == weth, 'BAD_PAIR');
+
+    if (keepToken != weth) {
+      return doubleSwap(token0, amount0, token1, amount1, recipient);
+    }
 
     (uint256 keepAmount, uint256 swapAmount) = weth == token0
       ? (amount0, amount1)
@@ -100,6 +101,15 @@ contract UniswapETHAdapter is Receiver {
     uint256 outputAmount = executeSwap(swapToken, keepToken, swapAmount, address(this));
 
     uint256 totalWETH = outputAmount + keepAmount;
+    IWETH(weth).withdraw(totalWETH);
+    TransferHelper.safeTransferETH(recipient, totalWETH);
+  }
+
+  function doubleSwap(address token0, uint256 amount0, address token1, uint256 amount1, address recipient) private {
+    uint256 swap0Amt = executeSwap(token0, weth, amount0, amount0, address(this));
+    uint256 swap1Amt = executeSwap(token1, weth, amount1, amount1, address(this));
+
+    uint256 totalWETH = swap0Amt + swap1Amt;
     IWETH(weth).withdraw(totalWETH);
     TransferHelper.safeTransferETH(recipient, totalWETH);
   }
