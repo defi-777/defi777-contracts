@@ -99,7 +99,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
   function _wrap(address sender, address recipient, uint256 amount) private returns (uint256 outputAmount) {
     TransferHelper.safeTransferFrom(address(token), sender, address(this), amount);
 
-    _gulp(recipient);
+    return _gulp(recipient);
   }
 
   /**
@@ -111,7 +111,7 @@ contract Wrapped777 is ERC777WithGranularity, Receiver, IWrapped777, IERC3126 {
    */
   function wrapTo(uint256 amount, address recipient) external override returns (uint256 outputAmount) {
     address sender = _msgSender();
-    _wrap(sender, recipient, amount);
+    return _wrap(sender, recipient, amount);
   }
 
   /**
