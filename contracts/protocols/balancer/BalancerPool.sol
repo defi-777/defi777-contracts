@@ -34,6 +34,10 @@ contract BalancerPool is Receiver, ReverseENS {
 
     ERC20 innerInputToken = IWrapped777(address(_token)).token();
 
+    if (tryPoolToPoolSwap(address(innerInputToken), unwrappedAmount, from)) {
+      return;
+    }
+
     swapInToPool(innerInputToken, unwrappedAmount, from);
   }
 
@@ -43,5 +47,33 @@ contract BalancerPool is Receiver, ReverseENS {
     
     ERC20(address(pool)).transfer(address(token), poolTokens);
     token.gulp(recipient);
+  }
+
+  function tryPoolToPoolSwap(address poolToken, uint256 amount, address recipient) private returns (bool) {
+    try BPool(poolToken).getCurrentTokens() returns (address[] memory inputTokens) {
+      address[] memory outputTokens = pool.getCurrentTokens();
+      address bridgeToken = matchTokens(inputTokens, outputTokens);
+
+      if (bridgeToken == address(0)) {
+        revert('NO-PATH');
+      }
+
+      uint256 bridgeAmount = BPool(poolToken).exitswapPoolAmountIn(bridgeToken, amount, 0);
+      swapInToPool(ERC20(bridgeToken), bridgeAmount, recipient);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function matchTokens(address[] memory tokensA, address[] memory tokensB) private returns (address) {
+    for (uint8 i = 0; i < tokensA.length; i++) {
+      for (uint8 j = 0; j < tokensB.length; j++) {
+        if (tokensA[i] == tokensB[i]) {
+          return tokensA[i];
+        }
+      }
+    }
+    return address(0);
   }
 }
