@@ -1,6 +1,15 @@
 const aaveContracts = {
-  // '1': {
-  // },
+  '1': {
+    addressProvider: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5',
+    weth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    aWeth: '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e',
+    aTokens: [
+      // Dai
+      { aToken: '0x028171bCA77440897B824Ca71D1c56caC55b68A3', token: '0x6B175474E89094C44Da98b954EedeAC495271d0F' },
+      // USDC
+      { aToken: '0xBcca60bB61934080951369a648Fb03DF4F96263C', token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' },
+    ],
+  },
   '42': {
     addressProvider: '0x652B2937Efd0B5beA1c8d54293FC1289672AFC6b',
     weth: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
