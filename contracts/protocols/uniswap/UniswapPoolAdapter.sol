@@ -7,6 +7,7 @@ import "../../ens/ReverseENS.sol";
 import "../../tokens/Wrapped777.sol";
 import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
+import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./IUniswapAdapterFactory.sol";
@@ -17,6 +18,7 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
 
   Wrapped777 public immutable wrapper;
   IUniswapV2Pair public immutable pool;
+  IUniswapV2Factory public immutable uniswapFactory;
 
   ERC20 public immutable token0;
   ERC20 public immutable token1;
@@ -34,17 +36,22 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     token0 = _pool.token0();
     token1 = _pool.token1();
 
-    weth = factory.uniswapRouter().WETH();
+    IUniswapV2Router01 router = factory.uniswapRouter();
+    weth = router.WETH();
+    uniswapFactory = router.factory();
   }
 
   receive() external payable {
-    if (address(token0) != weth && address(token1) != weth) {
-      revert('NoETH');
-    }
 
     IWETH(weth).deposit{ value: msg.value }();
 
-    swapHalfAddLiquidityAndReturn(weth, msg.value, msg.sender);
+    if (address(token0) == weth || address(token1) == weth) {
+      swapHalfAddLiquidityAndReturn(weth, msg.value, msg.sender);
+    } else {
+      uint256 output = executeSwap(weth, address(token0), msg.value, address(this));
+      require(output != 0, 'NO-PATH');
+      swapHalfAddLiquidityAndReturn(address(token0), output, msg.sender);
+    }
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
@@ -61,7 +68,33 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
       // Note: this sends the unwrapped tokens
       pool.burn(from);
     } else {
-      revert("Invalid");
+      swapIn(unwrappedInput, unwrappedBalance, from);
+    }
+  }
+
+  function swapIn(ERC20 token, uint256 amount, address recipient) private {
+    uint256 swapAmount = executeSwap(address(token), address(token0), amount, address(this));
+    if (swapAmount != 0) {
+      return swapHalfAddLiquidityAndReturn(address(token0), swapAmount, recipient);
+    }
+
+    swapAmount = executeSwap(address(token), address(token1), amount, address(this));
+    if (swapAmount != 0) {
+      return swapHalfAddLiquidityAndReturn(address(token1), swapAmount, recipient);
+    }
+
+    if (address(token0) != weth && address(token1) != weth) {
+      address wethPair = uniswapFactory.getPair(weth, address(token0));
+      swapAmount = executeSwap(address(token), weth, amount, wethPair);
+      swapAmount = executeSwap(weth, address(token0), swapAmount, 0, address(this));
+
+      if (swapAmount != 0) {
+        return swapHalfAddLiquidityAndReturn(address(token0), swapAmount, recipient);
+      }
+    }
+
+    if (swapAmount == 0) {
+      revert('NO-PATH');
     }
   }
 
@@ -107,6 +140,31 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     if (amount == 0) {
       amount = userIn / 2;
     }
+  }
+
+  function executeSwap(address input, address out, uint256 swapAmount, address to) private returns (uint256 outputAmount) {
+    return executeSwap(input, out, swapAmount, swapAmount, to);
+  }
+
+  function executeSwap(address input, address out, uint256 swapAmount, uint256 transferAmount, address to) private returns (uint256 outputAmount) {
+    IUniswapV2Pair pair = IUniswapV2Pair(uniswapFactory.getPair(input, out));
+    if (address(pair) == address(0)) {
+      return 0;
+    }
+
+    if (transferAmount > 0) {
+      TransferHelper.safeTransfer(input, address(pair), transferAmount);
+    }
+
+    address _token0 = address(pair.token0());
+
+    (uint256 reserve0, uint256 reserve1,) = pair.getReserves();
+    (uint256 reserveIn, uint256 reserveOut) = input == _token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+
+    outputAmount = getAmountOut(swapAmount, reserveIn, reserveOut);
+    (uint amount0Out, uint amount1Out) = input == _token0 ? (uint(0), outputAmount) : (outputAmount, uint(0));
+
+    pair.swap(amount0Out, amount1Out, to, new bytes(0));
   }
 
   // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
