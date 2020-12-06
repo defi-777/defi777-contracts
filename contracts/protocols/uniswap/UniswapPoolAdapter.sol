@@ -11,7 +11,7 @@ import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./IUniswapAdapterFactory.sol";
-
+import "./UniswapLibrary.sol";
 
 contract UniswapPoolAdapter is Receiver, ReverseENS {
   using SafeMath for uint256;
@@ -117,11 +117,11 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     uint256 swapReserve = input == address(token0) ? res0 : res1;
     uint256 outReserve = input == address(token0) ? res1 : res0;
 
-    uint256 swapAmount = calculateSwapInAmount(swapReserve, amount);
+    uint256 swapAmount = UniswapLibrary.calculateSwapInAmount(swapReserve, amount);
     keepAmount = amount - swapAmount;
     ERC20(input).transfer(address(pool), swapAmount);
 
-    outputAmount = getAmountOut(swapAmount, swapReserve, outReserve);
+    outputAmount = UniswapLibrary.getAmountOut(swapAmount, swapReserve, outReserve);
     (uint amount0Out, uint amount1Out) = input == address(token0)
       ? (uint(0), outputAmount)
       : (outputAmount, uint(0));
@@ -132,14 +132,6 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     token0.transfer(address(pool), amount0);
     token1.transfer(address(pool), amount1);
     poolTokens = pool.mint(address(this));
-  }
-
-  function calculateSwapInAmount(uint256 reserveIn, uint256 userIn) public pure returns (uint256 amount) {
-    amount = sqrt(reserveIn.mul(userIn.mul(3988000) + reserveIn.mul(3988009))).sub(reserveIn.mul(1997)) / 1994;
-
-    if (amount == 0) {
-      amount = userIn / 2;
-    }
   }
 
   function executeSwap(address input, address out, uint256 swapAmount, address to) private returns (uint256 outputAmount) {
@@ -161,31 +153,9 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     (uint256 reserve0, uint256 reserve1,) = pair.getReserves();
     (uint256 reserveIn, uint256 reserveOut) = input == _token0 ? (reserve0, reserve1) : (reserve1, reserve0);
 
-    outputAmount = getAmountOut(swapAmount, reserveIn, reserveOut);
+    outputAmount = UniswapLibrary.getAmountOut(swapAmount, reserveIn, reserveOut);
     (uint amount0Out, uint amount1Out) = input == _token0 ? (uint(0), outputAmount) : (outputAmount, uint(0));
 
     pair.swap(amount0Out, amount1Out, to, new bytes(0));
-  }
-
-  // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-  function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-    uint amountInWithFee = amountIn.mul(997);
-    uint numerator = amountInWithFee.mul(reserveOut);
-    uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-    amountOut = numerator / denominator;
-  }
-
-  function sqrt(uint256 y) internal pure returns (uint256 z) {
-    if (y > 3) {
-      z = y;
-      uint256 x = y / 2 + 1;
-      while (x < z) {
-        z = x;
-        x = (y / x + x) / 2;
-      }
-    } else if (y != 0) {
-      z = 1;
-    }
-    // else z = 0
   }
 }

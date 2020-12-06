@@ -10,6 +10,7 @@ import "../../interfaces/IWETH.sol";
 import "../../Receiver.sol";
 import "./interfaces/IUniswapV2Router01.sol";
 import "./interfaces/IUniswapV2Pair.sol";
+import "./UniswapLibrary.sol";
 
 contract UniswapETHAdapter is Receiver, ReverseENS {
   using SafeMath for uint256;
@@ -64,7 +65,7 @@ contract UniswapETHAdapter is Receiver, ReverseENS {
     (uint256 reserve0, uint256 reserve1,) = pair.getReserves();
     (uint256 reserveIn, uint256 reserveOut) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
 
-    outputAmount = getAmountOut(swapAmount, reserveIn, reserveOut);
+    outputAmount = UniswapLibrary.getAmountOut(swapAmount, reserveIn, reserveOut);
     (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), outputAmount) : (outputAmount, uint(0));
 
     pair.swap(amount0Out, amount1Out, to, new bytes(0));
@@ -112,14 +113,5 @@ contract UniswapETHAdapter is Receiver, ReverseENS {
     uint256 totalWETH = swap0Amt + swap1Amt;
     IWETH(weth).withdraw(totalWETH);
     TransferHelper.safeTransferETH(recipient, totalWETH);
-  }
-
-  function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-    require(amountIn > 0);
-    require(reserveIn > 0 && reserveOut > 0);
-    uint amountInWithFee = amountIn.mul(997);
-    uint numerator = amountInWithFee.mul(reserveOut);
-    uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-    amountOut = numerator / denominator;
   }
 }
