@@ -62,7 +62,7 @@ contract UniswapAdapter is Receiver, ReverseENS {
     Wrapped777 inputWrapper = Wrapped777(address(_token));
     ERC20 unwrappedInput = inputWrapper.token();
 
-    if (isUniswapLPToken(address(unwrappedInput))) {
+    if (UniswapLibrary.isLPToken(address(unwrappedInput))) {
       burnAndSwapLPToken(inputWrapper, IUniswapV2Pair(address(unwrappedInput)), from, amount);
       return;
     }
@@ -112,14 +112,6 @@ contract UniswapAdapter is Receiver, ReverseENS {
     (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), outputAmount) : (outputAmount, uint(0));
 
     pair.swap(amount0Out, amount1Out, to, new bytes(0));
-  }
-
-  function isUniswapLPToken(address token) private view returns (bool) {
-    try IUniswapV2Pair(token).factory() returns (address factory) {
-      return factory == address(uniswapFactory);
-    } catch {
-      return false;
-    }
   }
 
   function burnAndSwapLPToken(Wrapped777 inputWrapper, IUniswapV2Pair pair, address recipient, uint256 amount) private {

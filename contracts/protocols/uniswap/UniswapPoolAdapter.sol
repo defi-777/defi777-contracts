@@ -58,6 +58,11 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     Wrapped777 inputWrapper = Wrapped777(address(_token));
     ERC20 unwrappedInput = inputWrapper.token();
 
+    if (UniswapLibrary.isLPToken(address(unwrappedInput)) && address(unwrappedInput) != address(pool)) {
+      swapFromLPToken(inputWrapper, address(unwrappedInput), amount, from);
+      return;
+    }
+
     uint unwrappedBalance = inputWrapper.unwrap(amount);
 
     if (address(unwrappedInput) == address(token0) || address(unwrappedInput) == address(token1)) {
@@ -105,9 +110,7 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
       ? (keepAmount, outputAmount)
       : (outputAmount, keepAmount);
 
-    uint256 poolTokens = addLiquidity(amount0, amount1);
-
-    pool.transfer(address(wrapper), poolTokens);
+    addLiquidity(amount0, amount1, address(wrapper));
     wrapper.gulp(recipient);
   }
 
@@ -128,10 +131,26 @@ contract UniswapPoolAdapter is Receiver, ReverseENS {
     pool.swap(amount0Out, amount1Out, address(this), new bytes(0));
   }
 
-  function addLiquidity(uint256 amount0, uint256 amount1) private returns (uint256 poolTokens) {
+  function addLiquidity(uint256 amount0, uint256 amount1, address to) private returns (uint256 poolTokens) {
     token0.transfer(address(pool), amount0);
     token1.transfer(address(pool), amount1);
-    poolTokens = pool.mint(address(this));
+    poolTokens = pool.mint(to);
+  }
+
+  function swapFromLPToken(Wrapped777 inputWrapper, address token, uint256 amount, address recipient) private {
+    ERC20 tokenIn0 = IUniswapV2Pair(token).token0();
+    ERC20 tokenIn1 = IUniswapV2Pair(token).token1();
+
+    inputWrapper.unwrapTo(amount, token);
+
+    if (tokenIn0 == token0 && tokenIn1 == token1) {
+      IUniswapV2Pair(token).burn(address(pool));
+    } else {
+      revert('NO-PAIR');
+    }
+
+    pool.mint(address(wrapper));
+    wrapper.gulp(recipient);
   }
 
   function executeSwap(address input, address out, uint256 swapAmount, address to) private returns (uint256 outputAmount) {

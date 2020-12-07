@@ -2,9 +2,18 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./interfaces/IUniswapV2Pair.sol";
 
 library UniswapLibrary {
   using SafeMath for uint256;
+
+  function isLPToken(address token) internal view returns (bool) {
+    try IUniswapV2Pair(token).token0() returns (ERC20 token0) {
+      return address(token0) != address(0);
+    } catch {
+      return false;
+    }
+  }
 
   function calculateSwapInAmount(uint256 reserveIn, uint256 userIn) internal pure returns (uint256 amount) {
     amount = sqrt(reserveIn.mul(userIn.mul(3988000) + reserveIn.mul(3988009))).sub(reserveIn.mul(1997)) / 1994;
