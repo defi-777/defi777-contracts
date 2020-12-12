@@ -32,7 +32,7 @@ group('Curve pools', (accounts) => {
     const curveDeposit = await MockCurveDeposit.new([token1.address, token2.address, token3.address]);
     const lpToken = await curveDeposit.token();
     
-    await registry.addDepositor(curveDeposit.address);
+    await registry.addDepositor(curveDeposit.address, lpToken);
     const registryInfo = await registry.getDepositor(lpToken, token2.address);
     expect(registryInfo[0]).to.equal(curveDeposit.address);
     expect(registryInfo[1].toNumber()).to.equal(3);
@@ -66,7 +66,7 @@ group('Curve pools', (accounts) => {
 
     const curveDeposit = await MockCurveDeposit.new([token1.address, token2.address, token3.address]);
     const lpToken = await curveDeposit.token();
-    await registry.addDepositor(curveDeposit.address);
+    await registry.addDepositor(curveDeposit.address, lpToken);
 
     const gague = await TestCurveGague.new(lpToken);
     const minter = await TestCurveMinter.new();

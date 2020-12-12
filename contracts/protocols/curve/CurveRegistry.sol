@@ -16,8 +16,7 @@ contract CurveRegistry is Ownable {
 
   event AdapterRegistered(address adapter, bool isExit);
 
-  function addDepositor(ICurveDeposit depositor) external onlyOwner {
-    address lpToken = depositor.token();
+  function addDepositor(ICurveDeposit depositor, address lpToken) external onlyOwner {
     require(lpTokenToDepositor[lpToken].contractAddress == address(0));
     lpTokenToDepositor[lpToken].contractAddress = address(depositor);
 
