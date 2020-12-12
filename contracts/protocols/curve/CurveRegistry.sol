@@ -12,6 +12,9 @@ contract CurveRegistry is Ownable {
   }
 
   mapping(address => Depositor) private lpTokenToDepositor;
+  bool public locked;
+
+  event AdapterRegistered(address adapter, bool isExit);
 
   function addDepositor(ICurveDeposit depositor) external onlyOwner {
     address lpToken = depositor.token();
@@ -64,5 +67,14 @@ contract CurveRegistry is Ownable {
         return address(0);
       }
     }
+  }
+
+  function setLocked(bool _locked) external onlyOwner {
+    locked = _locked;
+  }
+
+  function registerAdapter(bool isExit) external {
+    require(!locked);
+    emit AdapterRegistered(msg.sender, isExit);
   }
 }

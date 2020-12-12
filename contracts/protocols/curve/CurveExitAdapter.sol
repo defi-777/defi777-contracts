@@ -23,6 +23,7 @@ contract CurveExitAdapter is Receiver, ReverseENS {
     wrapper = _wrapper;
     innerToken = _wrapper.token();
     registry = _registry;
+    _registry.registerAdapter(true);
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {

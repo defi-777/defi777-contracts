@@ -17,6 +17,7 @@ contract CurveAdapter is Receiver, ReverseENS {
     lpToken = _wrapper.token();
     wrapper = _wrapper;
     registry = _registry;
+    _registry.registerAdapter(false);
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
