@@ -2,17 +2,25 @@
 pragma solidity >=0.6.2 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../interfaces/ICurvePool.sol";
+import "../interfaces/ICurveDeposit.sol";
+import "./MockCurveLPToken.sol";
 
-contract TestCurvePool is ICurvePool, ERC20 {
+contract MockCurveDeposit is ICurveDeposit, ERC20 {
   address[] private tokens;
+
+  address public override token;
 
   constructor(address[3] memory _tokens) public ERC20("y Curve Pool", "yCRV") {
     tokens = _tokens;
+    token = address(new MockCurveLPToken());
   }
 
   function coins(int128 i) external override view returns (address) {
     return tokens[uint256(i)];
+  }
+
+  function underlying_coins(int128) external override view returns (address) {
+    revert('Unsupported');
   }
 
   function add_liquidity(
@@ -26,7 +34,7 @@ contract TestCurvePool is ICurvePool, ERC20 {
         mintAmt += amounts[uint256(i)];
       }
     }
-    _mint(msg.sender, mintAmt);
+    MockCurveLPToken(token).mint(msg.sender, mintAmt);
   }
 
   function add_liquidity(
@@ -54,7 +62,8 @@ contract TestCurvePool is ICurvePool, ERC20 {
         burnAmt += amounts[uint256(i)];
       }
     }
-    _burn(msg.sender, burnAmt);
+
+    MockCurveLPToken(token).burn(msg.sender, burnAmt);
   }
 
   function remove_liquidity_imbalance(

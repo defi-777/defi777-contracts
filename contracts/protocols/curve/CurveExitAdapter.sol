@@ -8,42 +8,40 @@ import "../../farming/IFarmerToken.sol";
 import "../../tokens/IWrapperFactory.sol";
 import "../../tokens/IWrapped777.sol";
 import "../../Receiver.sol";
-import "./interfaces/ICurvePool.sol";
+import "./interfaces/ICurveDeposit.sol";
+import "./CurveRegistry.sol";
 
 
 contract CurveExitAdapter is Receiver, ReverseENS {
-  IWrapped777 public immutable token;
+  IWrapped777 public immutable wrapper;
   ERC20 public immutable innerToken;
+  CurveRegistry public immutable registry;
 
   IERC1820Registry constant internal _ERC1820_REGISTRY = IERC1820Registry(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24);
 
-  constructor(IWrapped777 _wrapper) public {
-    token = _wrapper;
+  constructor(IWrapped777 _wrapper, CurveRegistry _registry) public {
+    wrapper = _wrapper;
     innerToken = _wrapper.token();
+    registry = _registry;
   }
 
   function _tokensReceived(IERC777 _token, address from, uint256 amount, bytes memory /*data*/) internal override {
     IWrapped777 inputWrapper = IWrapped777(address(_token));
-    ICurvePool pool = ICurvePool(address(inputWrapper.token()));
+    ERC20 lpToken = inputWrapper.token();
 
     address implementer = _ERC1820_REGISTRY.getInterfaceImplementer(address(_token), keccak256("Farmer777"));
     if (implementer != address(0) /* token is FarmerToken */) {
       farmRewards(IFarmerToken(address(_token)), from);
     }
 
-    uint256 poolTokens = inputWrapper.unwrap(amount);
+    uint256 lpTokens = inputWrapper.unwrap(amount);
 
-    int128 id = 0;
-    for (; id < 5; id++) {
-      if (pool.coins(id) == address(innerToken)) {
-        break;
-      }
-    }
+    (address depositor, uint8 numTokens, int128 index) = registry.getDepositor(address(lpToken), address(innerToken));
 
-    removeLiquidity(pool, id, poolTokens);
+    removeLiquidity(ICurveDeposit(depositor), index, numTokens, lpTokens);
 
-    innerToken.transfer(address(token), innerToken.balanceOf(address(this)));
-    token.gulp(from);
+    innerToken.transfer(address(wrapper), innerToken.balanceOf(address(this)));
+    wrapper.gulp(from);
   }
 
   function farmRewards(IFarmerToken _token, address recipient) private {
@@ -54,17 +52,21 @@ contract CurveExitAdapter is Receiver, ReverseENS {
     }
   }
 
-  function removeLiquidity(ICurvePool pool, int128 id, uint256 amount) private {
-    uint256[4] memory fourTokens;
-    fourTokens[uint256(id)] = amount;
-    try pool.remove_liquidity_imbalance(fourTokens, 0) {} catch {
+  function removeLiquidity(ICurveDeposit depositor, int128 index, uint256 numTokens, uint256 amount) private {
+    if (numTokens == 4) {
+      uint256[4] memory fourTokens;
+      fourTokens[uint256(index)] = amount;
+      depositor.remove_liquidity_imbalance(fourTokens, 0);
+    } else if (numTokens == 3) {
       uint256[3] memory threeTokens;
-      threeTokens[uint256(id)] = amount;
-      try pool.remove_liquidity_imbalance(threeTokens, 0) {} catch {
-        uint256[2] memory twoTokens;
-        twoTokens[uint256(id)] = amount;
-        pool.remove_liquidity_imbalance(twoTokens, 0);
-      }
+      threeTokens[uint256(index)] = amount;
+      depositor.remove_liquidity_imbalance(threeTokens, 0);
+    } else if (numTokens == 2) {
+      uint256[2] memory twoTokens;
+      twoTokens[uint256(index)] = amount;
+      depositor.remove_liquidity_imbalance(twoTokens, 0);
+    } else {
+      revert('TKNM');
     }
   }
 }

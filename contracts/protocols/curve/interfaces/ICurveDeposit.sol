@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.2;
 
-interface ICurvePool {
+interface ICurveDeposit {
   // function get_virtual_price() external view returns (uint);
 
+  function token() external returns (address);
+
   function coins(int128 i) external view returns (address);
+
+  function underlying_coins(int128 i) external view returns (address);
 
   function add_liquidity(
     uint256[2] calldata amounts,
