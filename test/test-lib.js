@@ -63,9 +63,10 @@ const getWrapperFactory = async () => {
 
   const contract = await WrapperFactory.new();
   const getWrapper = async (token) => {
+    const tokenAddress = token.address || token;
     const [wrapperAddress] = await Promise.all([
-      contract.calculateWrapperAddress(token),
-      contract.createWrapper(token),
+      contract.calculateWrapperAddress(tokenAddress),
+      contract.createWrapper(tokenAddress),
     ]);
     const wrapper = await Wrapped777.at(wrapperAddress);
     return wrapper;
