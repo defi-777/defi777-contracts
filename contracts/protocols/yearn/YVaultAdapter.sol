@@ -16,6 +16,8 @@ contract YVaultAdapter is Receiver, Ownable, ReverseENS {
   mapping(address => address) public tokenToWrappedVault;
   IWETH public immutable weth;
 
+  event MappingSet(address input, address output);
+
   constructor(IWETH _weth, address firstOwner) public {
     weth = _weth;
 
@@ -38,18 +40,20 @@ contract YVaultAdapter is Receiver, Ownable, ReverseENS {
     } else {
       tokenToWrappedVault[address(IWrapped777(wrappedToken).token())] = wrappedVault;
     }
+    emit MappingSet(wrappedToken, wrappedVault);
   }
 
   function _tokensReceived(IERC777 token, address from, uint256 amount, bytes memory) internal override {
     address outputWrapper = wrappedVaultToWrapper[address(token)];
 
+    ERC20 unwrappedToken = IWrapped777(address(token)).token();
+    uint256 unwrappedAmount = IWrapped777(address(token)).unwrap(amount);
+
     if (outputWrapper == address(weth)) {
-      withdrawETH(address(token), from, amount);
+      withdrawETH(address(unwrappedToken), from, unwrappedAmount);
     } else if (outputWrapper != address(0)) {
-      withdraw(address(token), IWrapped777(outputWrapper), from, amount);
+      withdraw(address(unwrappedToken), IWrapped777(outputWrapper), from, unwrappedAmount);
     } else {
-      ERC20 unwrappedToken = IWrapped777(address(token)).token();
-      uint256 unwrappedAmount = IWrapped777(address(token)).unwrap(amount);
       deposit(unwrappedToken, unwrappedAmount, from);
     }
   }
@@ -66,10 +70,8 @@ contract YVaultAdapter is Receiver, Ownable, ReverseENS {
     IWrapped777(outputWrapper).gulp(recipient);
   }
 
-  function withdraw(address token, IWrapped777 outputWrapper, address recipient, uint256 amount) private {
-    uint256 unwrappedAmount = IWrapped777(token).unwrap(amount);
-    
-    IyVault vault = IyVault(address(IWrapped777(token).token()));
+  function withdraw(address _vault, IWrapped777 outputWrapper, address recipient, uint256 unwrappedAmount) private {
+    IyVault vault = IyVault(_vault);
     vault.withdraw(unwrappedAmount);
 
     ERC20 innerToken = outputWrapper.token();
@@ -78,10 +80,8 @@ contract YVaultAdapter is Receiver, Ownable, ReverseENS {
     outputWrapper.gulp(recipient);
   }
 
-  function withdrawETH(address token, address recipient, uint256 amount) private {
-    uint256 unwrappedAmount = IWrapped777(token).unwrap(amount);
-
-    IyVault vault = IyVault(address(IWrapped777(token).token()));
+  function withdrawETH(address _vault, address recipient, uint256 unwrappedAmount) private {
+    IyVault vault = IyVault(_vault);
     vault.withdraw(unwrappedAmount);
 
     uint256 ethAmount = weth.balanceOf(address(this));
