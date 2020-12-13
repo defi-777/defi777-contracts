@@ -15,6 +15,9 @@ contract AddressBook is Ownable, IAddressBook {
   constructor(IAddressBook _defaultFactory) public {
     defaultFactory = _defaultFactory;
     emit DefaultFactorySet(address(defaultFactory));
+
+    // Needs to be explicitly set since we deploy through a Create2 proxy
+    transferOwnership(tx.origin);
   }
 
   function calculateWrapperAddress(address token) external view override returns (address calculatedAddress) {
