@@ -16,6 +16,11 @@ contract CurveRegistry is Ownable {
 
   event AdapterRegistered(address adapter, bool isExit);
 
+  constructor() public {
+    // Needs to be explicitly set since we deploy through a Create2 proxy
+    transferOwnership(tx.origin);
+  }
+
   function addDepositor(ICurveDeposit depositor, address lpToken) external onlyOwner {
     require(lpTokenToDepositor[lpToken].contractAddress == address(0));
     lpTokenToDepositor[lpToken].contractAddress = address(depositor);
@@ -31,6 +36,10 @@ contract CurveRegistry is Ownable {
 
       lpTokenToDepositor[lpToken].coinToIndex[coin] = i + 1;
     }
+  }
+
+  function getDepositorAddress(address lpToken) external view returns (address) {
+    return lpTokenToDepositor[lpToken].contractAddress;
   }
 
   function getDepositor(address lpToken, address coin) external view returns (address, uint8, int128) {

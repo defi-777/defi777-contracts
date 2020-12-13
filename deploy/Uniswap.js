@@ -4,7 +4,7 @@ const uniswapContracts = {
   '1': {
     tokens: [
       '0x6b175474e89094c44da98b954eedeac495271d0f', // Dai
-      '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', // MKR
+      '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC
       '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
     ],
     pools: [
@@ -21,6 +21,14 @@ const uniswapContracts = {
     pools: [
       '0x8b22f85d0c844cf793690f6d9dfe9f11ddb35449', // DAI-ETH
       '0x4e99615101ccbb83a462dc4de2bc1362ef1365e5', // UNI-ETH
+    ],
+  },
+  '5': {
+    tokens: [
+      '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', // UNI
+    ],
+    pools: [
+      '0x28cee28a7c4b4022ac92685c07d2f33ab1a0e122', // UNI-ETH
     ],
   },
   '42': {

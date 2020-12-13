@@ -33,7 +33,7 @@ const func = async function ({ deployments, getNamedAccounts, getChainId }) {
   const ensureWrapper = async (token) => {
     const wrapper = await getWrapper(token);
     if (await web3.eth.getCode(wrapper) === '0x') {
-      const result = await execute('WrapperFactory', {from: deployer, gasLimit: 9500000}, 'createWrapper', token);
+      const result = await execute('WrapperFactory', {from: deployer, gasLimit: 4000000}, 'createWrapper', token);
     }
     return wrapper;
   }

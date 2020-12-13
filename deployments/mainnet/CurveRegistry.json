@@ -1,0 +1,310 @@
+{
+  "address": "0xF437d2f7A42DeCeCD5eE3Aec2BCc2eBEE8D44bd8",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "adapter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isExit",
+          "type": "bool"
+        }
+      ],
+      "name": "AdapterRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract ICurveDeposit",
+          "name": "depositor",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "lpToken",
+          "type": "address"
+        }
+      ],
+      "name": "addDepositor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "lpToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "coin",
+          "type": "address"
+        }
+      ],
+      "name": "getDepositor",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        },
+        {
+          "internalType": "int128",
+          "name": "",
+          "type": "int128"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "lpToken",
+          "type": "address"
+        }
+      ],
+      "name": "getDepositorAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "locked",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "isExit",
+          "type": "bool"
+        }
+      ],
+      "name": "registerAdapter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bool",
+          "name": "_locked",
+          "type": "bool"
+        }
+      ],
+      "name": "setLocked",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "solcInputHash": "a7477d102df11c8ad2e5af9fd0e2d113",
+  "metadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"adapter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"isExit\",\"type\":\"bool\"}],\"name\":\"AdapterRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"contract ICurveDeposit\",\"name\":\"depositor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"lpToken\",\"type\":\"address\"}],\"name\":\"addDepositor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lpToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"coin\",\"type\":\"address\"}],\"name\":\"getDepositor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"},{\"internalType\":\"int128\",\"name\":\"\",\"type\":\"int128\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lpToken\",\"type\":\"address\"}],\"name\":\"getDepositorAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"locked\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"isExit\",\"type\":\"bool\"}],\"name\":\"registerAdapter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_locked\",\"type\":\"bool\"}],\"name\":\"setLocked\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/protocols/curve/CurveRegistry.sol\":\"CurveRegistry\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/GSN/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.6.0;\\n\\n/*\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with GSN meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address payable) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes memory) {\\n        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0xdb26cbf4d028490f49831a7865c2fe1b28db44b535ca8d343785a3b768aae183\",\"license\":\"MIT\"},\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.6.0;\\n\\nimport \\\"../GSN/Context.sol\\\";\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\ncontract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor () internal {\\n        address msgSender = _msgSender();\\n        _owner = msgSender;\\n        emit OwnershipTransferred(address(0), msgSender);\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        require(_owner == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n        _;\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        emit OwnershipTransferred(_owner, address(0));\\n        _owner = address(0);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        emit OwnershipTransferred(_owner, newOwner);\\n        _owner = newOwner;\\n    }\\n}\\n\",\"keccak256\":\"0x4bd6402ca6b3419008c2b482aff54e66836e8cb4eba2680e42ac5884ae6424fc\",\"license\":\"MIT\"},\"contracts/protocols/curve/CurveRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.6.2 <0.7.0;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"./interfaces/ICurveDeposit.sol\\\";\\n\\ncontract CurveRegistry is Ownable {\\n  struct Depositor {\\n    address contractAddress;\\n    uint8 numTokens;\\n    mapping(address => int128) coinToIndex;\\n  }\\n\\n  mapping(address => Depositor) private lpTokenToDepositor;\\n  bool public locked;\\n\\n  event AdapterRegistered(address adapter, bool isExit);\\n\\n  constructor() public {\\n    // Needs to be explicitly set since we deploy through a Create2 proxy\\n    transferOwnership(tx.origin);\\n  }\\n\\n  function addDepositor(ICurveDeposit depositor, address lpToken) external onlyOwner {\\n    require(lpTokenToDepositor[lpToken].contractAddress == address(0));\\n    lpTokenToDepositor[lpToken].contractAddress = address(depositor);\\n\\n    bool usesUnderlying = depositorUsesUnderlying(depositor);\\n\\n    for(int128 i = 0; true; i += 1) {\\n      address coin = getDepositorCoin(depositor, i, usesUnderlying);\\n      if (coin == address(0)) {\\n        lpTokenToDepositor[lpToken].numTokens = uint8(i);\\n        break;\\n      }\\n\\n      lpTokenToDepositor[lpToken].coinToIndex[coin] = i + 1;\\n    }\\n  }\\n\\n  function getDepositorAddress(address lpToken) external view returns (address) {\\n    return lpTokenToDepositor[lpToken].contractAddress;\\n  }\\n\\n  function getDepositor(address lpToken, address coin) external view returns (address, uint8, int128) {\\n    Depositor storage depositor = lpTokenToDepositor[lpToken];\\n\\n    int128 index = depositor.coinToIndex[coin];\\n    if (index == 0) {\\n      revert('UNSUPPORTED');\\n    }\\n\\n    return (depositor.contractAddress, depositor.numTokens, index - 1);\\n  }\\n\\n  function depositorUsesUnderlying(ICurveDeposit depositor) private view returns (bool) {\\n    try depositor.underlying_coins(0) {\\n      return true;\\n    } catch {\\n      return false;\\n    }\\n  }\\n\\n  function getDepositorCoin(ICurveDeposit depositor, int128 index, bool usesUnderlying) private view returns (address) {\\n    if (usesUnderlying) {\\n      try depositor.underlying_coins(index) returns (address coin) {\\n        return coin;\\n      } catch {\\n        return address(0);\\n      }\\n    } else {\\n      try depositor.coins(index) returns (address coin) {\\n        return coin;\\n      } catch {\\n        return address(0);\\n      }\\n    }\\n  }\\n\\n  function setLocked(bool _locked) external onlyOwner {\\n    locked = _locked;\\n  }\\n\\n  function registerAdapter(bool isExit) external {\\n    require(!locked);\\n    emit AdapterRegistered(msg.sender, isExit);\\n  }\\n}\\n\",\"keccak256\":\"0x4a1c8361919bddde4430081c3c20b1bc98163bc0f1028e8f468954c331f82b71\",\"license\":\"MIT\"},\"contracts/protocols/curve/interfaces/ICurveDeposit.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.6.2;\\n\\ninterface ICurveDeposit {\\n  // function get_virtual_price() external view returns (uint);\\n\\n  function token() external returns (address);\\n\\n  function coins(int128 i) external view returns (address);\\n\\n  function underlying_coins(int128 i) external view returns (address);\\n\\n  function add_liquidity(\\n    uint256[2] calldata amounts,\\n    uint256 min_mint_amount\\n  ) external;\\n\\n  function add_liquidity(\\n    uint256[3] calldata amounts,\\n    uint256 min_mint_amount\\n  ) external;\\n\\n  function add_liquidity(\\n    uint256[4] calldata amounts,\\n    uint256 min_mint_amount\\n  ) external;\\n\\n  function remove_liquidity_imbalance(\\n    uint256[2] calldata amounts,\\n    uint256 max_burn_amount\\n  ) external;\\n\\n  function remove_liquidity_imbalance(\\n    uint256[3] calldata amounts,\\n    uint256 max_burn_amount\\n  ) external;\\n\\n  function remove_liquidity_imbalance(\\n    uint256[4] calldata amounts,\\n    uint256 max_burn_amount\\n  ) external;\\n\\n  // function remove_liquidity(\\n  //   uint256 _amount,\\n  //   uint256[4] calldata amounts\\n  // ) external;\\n\\n  // function exchange(\\n  //   int128 from, int128 to, uint256 _from_amount, uint256 _min_to_amount\\n  // ) external;\\n}\\n\",\"keccak256\":\"0xcc2e1238831161bb08004cdc9d9a95259762eade98213a4005bfaeab3f220886\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50600061001b610061565b600080546001600160a01b0319166001600160a01b038316908117825560405192935091600080516020610a03833981519152908290a35061005c32610065565b61015d565b3390565b61006d610061565b6000546001600160a01b039081169116146100cf576040805162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b6001600160a01b0381166101145760405162461bcd60e51b81526004018080602001828103825260268152602001806109dd6026913960400191505060405180910390fd5b600080546040516001600160a01b0380851693921691600080516020610a0383398151915291a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6108718061016c6000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c8063cf30901211610066578063cf30901214610140578063d2279dec1461015c578063e9de65fd14610182578063f2fde38b146101b0578063f7aac7da146101d657610093565b8063211e28b61461009857806335858b6c146100b9578063715018a6146101145780638da5cb5b1461011c575b600080fd5b6100b7600480360360208110156100ae57600080fd5b503515156101f5565b005b6100e7600480360360408110156100cf57600080fd5b506001600160a01b0381358116916020013516610260565b604080516001600160a01b03909416845260ff9092166020840152600f0b82820152519081900360600190f35b6100b7610300565b6101246103a2565b604080516001600160a01b039092168252519081900360200190f35b6101486103b1565b604080519115158252519081900360200190f35b6101246004803603602081101561017257600080fd5b50356001600160a01b03166103ba565b6100b76004803603604081101561019857600080fd5b506001600160a01b03813581169160200135166103db565b6100b7600480360360208110156101c657600080fd5b50356001600160a01b0316610553565b6100b7600480360360208110156101ec57600080fd5b5035151561064b565b6101fd61069a565b6000546001600160a01b0390811691161461024d576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6002805460ff1916911515919091179055565b6001600160a01b0380831660009081526001602081815260408084209486168452918401905281205490918291829190600f90810b9081900b6102d8576040805162461bcd60e51b815260206004820152600b60248201526a155394d5541413d495115160aa1b604482015290519081900360640190fd5b90546001600160a01b038116945060ff600160a01b9091041692506000190190509250925092565b61030861069a565b6000546001600160a01b03908116911614610358576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031690565b60025460ff1681565b6001600160a01b03808216600090815260016020526040902054165b919050565b6103e361069a565b6000546001600160a01b03908116911614610433576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6001600160a01b03818116600090815260016020526040902054161561045857600080fd5b6001600160a01b03818116600090815260016020526040812080546001600160a01b031916928516929092179091556104908361069e565b905060005b60006104a2858385610720565b90506001600160a01b0381166104e657506001600160a01b0383166000908152600160205260409020805460ff60a01b1916600160a01b60ff84160217905561054d565b6001600160a01b03808516600090815260016020818152604080842095909416835293810190935220805491909201600f81900b6fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1990921691909117909155610495565b50505050565b61055b61069a565b6000546001600160a01b039081169116146105ab576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6001600160a01b0381166105f05760405162461bcd60e51b81526004018080602001828103825260268152602001806107f66026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b60025460ff161561065b57600080fd5b60408051338152821515602082015281517fb46d7fba84aa6e639d6acb9ba8f5d65fa767cc87f616c171cf9a0eb8985ff362929181900390910190a150565b3390565b6000816001600160a01b031663b739953e60006040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b1580156106e557600080fd5b505afa92505050801561070a57506040513d602081101561070557600080fd5b505160015b610716575060006103d6565b50600190506103d6565b600081156107a757836001600160a01b031663b739953e846040518263ffffffff1660e01b81526004018082600f0b815260200191505060206040518083038186803b15801561076f57600080fd5b505afa92505050801561079457506040513d602081101561078f57600080fd5b505160015b6107a0575060006107ee565b90506107ee565b836001600160a01b03166323746eb8846040518263ffffffff1660e01b81526004018082600f0b815260200191505060206040518083038186803b15801561076f57600080fd5b939250505056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f20616464726573734f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572a264697066735822122065f5e356bb21073a8ea1103d6d68d646bce7b3e3f5ae81bb2bcac1169896debd64736f6c634300060c00334f776e61626c653a206e6577206f776e657220697320746865207a65726f20616464726573738be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c8063cf30901211610066578063cf30901214610140578063d2279dec1461015c578063e9de65fd14610182578063f2fde38b146101b0578063f7aac7da146101d657610093565b8063211e28b61461009857806335858b6c146100b9578063715018a6146101145780638da5cb5b1461011c575b600080fd5b6100b7600480360360208110156100ae57600080fd5b503515156101f5565b005b6100e7600480360360408110156100cf57600080fd5b506001600160a01b0381358116916020013516610260565b604080516001600160a01b03909416845260ff9092166020840152600f0b82820152519081900360600190f35b6100b7610300565b6101246103a2565b604080516001600160a01b039092168252519081900360200190f35b6101486103b1565b604080519115158252519081900360200190f35b6101246004803603602081101561017257600080fd5b50356001600160a01b03166103ba565b6100b76004803603604081101561019857600080fd5b506001600160a01b03813581169160200135166103db565b6100b7600480360360208110156101c657600080fd5b50356001600160a01b0316610553565b6100b7600480360360208110156101ec57600080fd5b5035151561064b565b6101fd61069a565b6000546001600160a01b0390811691161461024d576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6002805460ff1916911515919091179055565b6001600160a01b0380831660009081526001602081815260408084209486168452918401905281205490918291829190600f90810b9081900b6102d8576040805162461bcd60e51b815260206004820152600b60248201526a155394d5541413d495115160aa1b604482015290519081900360640190fd5b90546001600160a01b038116945060ff600160a01b9091041692506000190190509250925092565b61030861069a565b6000546001600160a01b03908116911614610358576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031690565b60025460ff1681565b6001600160a01b03808216600090815260016020526040902054165b919050565b6103e361069a565b6000546001600160a01b03908116911614610433576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6001600160a01b03818116600090815260016020526040902054161561045857600080fd5b6001600160a01b03818116600090815260016020526040812080546001600160a01b031916928516929092179091556104908361069e565b905060005b60006104a2858385610720565b90506001600160a01b0381166104e657506001600160a01b0383166000908152600160205260409020805460ff60a01b1916600160a01b60ff84160217905561054d565b6001600160a01b03808516600090815260016020818152604080842095909416835293810190935220805491909201600f81900b6fffffffffffffffffffffffffffffffff166fffffffffffffffffffffffffffffffff1990921691909117909155610495565b50505050565b61055b61069a565b6000546001600160a01b039081169116146105ab576040805162461bcd60e51b8152602060048201819052602482015260008051602061081c833981519152604482015290519081900360640190fd5b6001600160a01b0381166105f05760405162461bcd60e51b81526004018080602001828103825260268152602001806107f66026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b60025460ff161561065b57600080fd5b60408051338152821515602082015281517fb46d7fba84aa6e639d6acb9ba8f5d65fa767cc87f616c171cf9a0eb8985ff362929181900390910190a150565b3390565b6000816001600160a01b031663b739953e60006040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b1580156106e557600080fd5b505afa92505050801561070a57506040513d602081101561070557600080fd5b505160015b610716575060006103d6565b50600190506103d6565b600081156107a757836001600160a01b031663b739953e846040518263ffffffff1660e01b81526004018082600f0b815260200191505060206040518083038186803b15801561076f57600080fd5b505afa92505050801561079457506040513d602081101561078f57600080fd5b505160015b6107a0575060006107ee565b90506107ee565b836001600160a01b03166323746eb8846040518263ffffffff1660e01b81526004018082600f0b815260200191505060206040518083038186803b15801561076f57600080fd5b939250505056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f20616464726573734f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572a264697066735822122065f5e356bb21073a8ea1103d6d68d646bce7b3e3f5ae81bb2bcac1169896debd64736f6c634300060c0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 30,
+        "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 9983,
+        "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+        "label": "lpTokenToDepositor",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_struct(Depositor)9979_storage)"
+      },
+      {
+        "astId": 9985,
+        "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+        "label": "locked",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_bool"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_int128": {
+        "encoding": "inplace",
+        "label": "int128",
+        "numberOfBytes": "16"
+      },
+      "t_mapping(t_address,t_int128)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => int128)",
+        "numberOfBytes": "32",
+        "value": "t_int128"
+      },
+      "t_mapping(t_address,t_struct(Depositor)9979_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct CurveRegistry.Depositor)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Depositor)9979_storage"
+      },
+      "t_struct(Depositor)9979_storage": {
+        "encoding": "inplace",
+        "label": "struct CurveRegistry.Depositor",
+        "members": [
+          {
+            "astId": 9972,
+            "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+            "label": "contractAddress",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 9974,
+            "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+            "label": "numTokens",
+            "offset": 20,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 9978,
+            "contract": "contracts/protocols/curve/CurveRegistry.sol:CurveRegistry",
+            "label": "coinToIndex",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_int128)"
+          }
+        ],
+        "numberOfBytes": "64"
+      },
+      "t_uint8": {
+        "encoding": "inplace",
+        "label": "uint8",
+        "numberOfBytes": "1"
+      }
+    }
+  }
+}
